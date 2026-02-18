@@ -1,0 +1,40 @@
+# macOS
+.DS_Store
+
+# Archives
+*.zip
+
+# LaTeX build artifacts
+*.aux
+*.log
+*.bbl
+*.blg
+*.out
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+*.toc
+*.lof
+*.lot
+*.idx
+*.ilg
+*.ind
+*.nav
+*.snm
+*.vrb
+_minted-*/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+.env
+dist/
+build/
+*.egg-info/
+
+# Editor
+.vscode/
+.idea/

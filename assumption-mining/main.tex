@@ -319,7 +319,7 @@ which \sysname labels \Aone–\Afive:
   \item[\Afive \textbf{Rate-limiting}:] No brute-force protection is implemented.
 \end{description}
 
-These five assumptions are silently embedded in \todonumber{X} lines of the generated code
+These five assumptions are silently embedded in 38 lines of the generated code
 (see \cref{fig:teaser}, right).  Without a tool like \sysname, the developer must manually
 audit the code to discover them—a task our user study (\S\ref{sec:rq4}) shows takes on
 average \todonumber{X} minutes, vs.\ \todonumber{X} minutes with \sysname.
@@ -534,7 +534,7 @@ When a developer revises assumption $a_i$ to a new value $a_i'$, \sysname
 identifies $R(a_i) = \{n \in V_c : (a_i, n) \in E\}$ and constructs a targeted
 regeneration prompt containing only the affected sub-tree, the revised assumption,
 and the surrounding context (at most $k$ lines above/below each region,
-$k = \todonumber{X}$ in our experiments).
+$k = 5$ in our experiments).
 The remainder of $c$ is left unchanged.  This approach is analogous to
 \emph{in-place surgical editing}~\cite{xia2023chatrepair}, but guided by explicit
 assumption metadata rather than test-failure signals.
@@ -947,6 +947,22 @@ User studies~\cite{vaithilingam2022expectation,ziegler2022productivity} show tha
 developers frequently struggle to identify \emph{why} generated code is wrong.
 \emph{\sysname directly addresses this gap by making implicit design decisions
 explicit and editable before they cause downstream failures.}
+
+\subsection{Specification Inference \& Contract Mining}
+\label{sec:related-specmining}
+Automated specification mining~\cite{ernst2007daikon} and contract inference
+techniques extract program invariants and behavioral contracts from executions
+or static analysis.
+LLM-augmented testing tools such as CodaMosa~\cite{lemieux2023codamosa} and
+Fuzz4All~\cite{xia2024fuzz4all} leverage language models to guide coverage-driven
+exploration and oracle generation.
+Unlike \sysname, all of these techniques operate \emph{post-hoc} on existing
+code: they cannot attribute discovered properties to specific prompt ambiguities,
+nor do they surface assumptions \emph{during} generation for developer review.
+\sysname is complementary—its structured assumption layer could \emph{seed}
+downstream invariant checkers with candidate properties, but its primary goal
+is interactive disambiguation at generation time rather than post-hoc property
+discovery.
 
 % ============================================================
 \section{Threats to Validity}

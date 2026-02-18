@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "assumption-miner"
+version = "0.1.0"
+description = "AssumptionMiner: Extracting and updating implicit requirements in LLM code generation."
+requires-python = ">=3.10"
+dependencies = []   # LLM SDKs are optional; install as needed
+
+[project.optional-dependencies]
+openai     = ["openai>=1.0"]
+anthropic  = ["anthropic>=0.25"]
+ast        = ["tree-sitter>=0.22", "tree-sitter-python>=0.22"]
+dev        = ["pytest>=8", "pytest-cov"]
+all        = [
+  "openai>=1.0",
+  "anthropic>=0.25",
+  "tree-sitter>=0.22",
+  "tree-sitter-python>=0.22",
+  "pytest>=8",
+  "pytest-cov",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["assumption_miner/tests"]
