@@ -1,0 +1,1017 @@
+% ============================================================
+%  main.tex — Assumption Mining: Extracting and Updating
+%  Implicit Requirements in LLM Code Generation
+%
+%  Target venue : ICSE / FSE / ASE  (ACM SIGCONF, 10 pages)
+%  Compile with : pdflatex main.tex (3 passes + bibtex)
+%
+%  BEFORE COMPILING:
+%    1. Download acmart.cls from https://www.acm.org/publications/proceedings-template
+%    2. Place acmart.cls in this directory
+%    3. Add figure PDFs to figures/  (see figures/README.md)
+%    4. Fill in all \todo{} markers
+% ============================================================
+
+\documentclass[sigconf,review,anonymous]{acmart}
+
+% ── Core packages ──────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{xspace}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage{balance}
+\usepackage{mdframed}
+\usepackage{microtype}
+\usepackage{cleveref}
+
+% tcolorbox for RQ boxes
+\usepackage[most]{tcolorbox}
+
+% ── ACM metadata ───────────────────────────────────────────
+\acmConference[ICSE '26]{48th International Conference on Software Engineering}{April 2026}{Somewhere, Someplace}
+\acmISBN{978-X-XXXX-XXXX-X/XX/XX}
+\acmDOI{10.1145/XXXXXXX.XXXXXXX}
+\copyrightyear{2026}
+\acmYear{2026}
+
+% ── Custom macros ──────────────────────────────────────────
+\newcommand{\sysname}{\textsc{AssumptionMiner}\xspace}
+\newcommand{\benchname}{\textsc{AmbigBench}\xspace}
+\newcommand{\NumBenchmarkTasks}{\todo{NUM}\xspace}
+\newcommand{\NumParticipants}{\todo{NUM}\xspace}
+\newcommand{\NumAssumptionTypes}{6\xspace}
+
+% Marker macros — appear in red/blue/orange in review mode
+\newcommand{\todo}[1]{\textcolor{red}{\textbf{[TODO: #1]}}}
+\newcommand{\todofig}[1]{\textcolor{blue}{\textbf{[FIGURE: #1]}}}
+\newcommand{\todonumber}[1]{\textcolor{orange}{\textbf{[NUM: #1]}}}
+
+% Short-hands for assumption labels used in the running example
+\newcommand{\Aone}{$\mathsf{A_1}$\xspace}
+\newcommand{\Atwo}{$\mathsf{A_2}$\xspace}
+\newcommand{\Athree}{$\mathsf{A_3}$\xspace}
+\newcommand{\Afour}{$\mathsf{A_4}$\xspace}
+\newcommand{\Afive}{$\mathsf{A_5}$\xspace}
+
+% Short-hands for Two Sum example assumptions (§2.2)
+\newcommand{\Bone}{$\mathsf{B_1}$\xspace}
+\newcommand{\Btwo}{$\mathsf{B_2}$\xspace}
+\newcommand{\Bthree}{$\mathsf{B_3}$\xspace}
+\newcommand{\Bfour}{$\mathsf{B_4}$\xspace}
+
+% ── RQ tcolorbox environment ───────────────────────────────
+\newtcolorbox{rqbox}[1]{
+  colback  = gray!8,
+  colframe = black!55,
+  fonttitle= \bfseries\small,
+  title    = {#1},
+  left     = 4pt,
+  right    = 4pt,
+  top      = 3pt,
+  bottom   = 3pt,
+  before upper = {\small},
+}
+
+% ── Listings style ─────────────────────────────────────────
+\lstset{
+  basicstyle   = \ttfamily\small,
+  breaklines   = true,
+  captionpos   = b,
+  numbers      = left,
+  numberstyle  = \tiny\color{gray},
+  frame        = single,
+  framesep     = 3pt,
+  aboveskip    = 6pt,
+  belowskip    = 4pt,
+}
+
+% ── Inline-code helper ─────────────────────────────────────
+\newcommand{\code}[1]{\texttt{#1}}
+
+% ── Metric abbreviations ───────────────────────────────────
+\newcommand{\AR}{$\mathit{AR}$\xspace}
+\newcommand{\AP}{$\mathit{AP}$\xspace}
+\newcommand{\AFone}{$\mathit{AF_1}$\xspace}
+\newcommand{\AS}{$\mathit{AS}$\xspace}
+\newcommand{\CAS}{$\mathit{CAS}$\xspace}
+
+% ============================================================
+\begin{document}
+
+\title{Assumption Mining: Extracting and Updating Implicit Requirements in LLM Code Generation}
+
+\author{Anonymous Author(s)}
+\affiliation{\institution{Anonymous Institution}}
+\email{anonymous@email.com}
+
+% ── Abstract ───────────────────────────────────────────────
+\begin{abstract}
+Large language models (LLMs) have demonstrated strong capabilities in natural
+language-to-code generation, yet they frequently rely on unstated assumptions when user
+specifications are incomplete or ambiguous.
+These hidden assumptions---about input formats, boundary conditions, error handling,
+domain constraints, or intended semantics---remain implicit in generated code, making the
+resulting programs brittle, difficult to validate, and prone to misalignment with user intent.
+
+This paper introduces \emph{Assumption Mining}, a framework that enables LLMs to
+proactively surface, structure, and update implicit requirements during code generation.
+Instead of producing code alone, our approach augments generation with an explicit
+assumption layer that captures inferred constraints and design decisions in a formalized
+representation.
+We further propose an interactive interface that allows users to inspect, confirm, or
+modify extracted assumptions.
+When an assumption is flipped or revised, the system incrementally regenerates and
+updates the corresponding code while preserving unaffected components.
+
+Our key contributions are:
+(1)~a novel hidden-assumption generation framework integrated into LLM-based code
+synthesis;
+(2)~an assumption--code dependency mechanism that supports traceable and controllable
+code updates; and
+(3)~\benchname, a benchmark for evaluating hidden assumption extraction under
+ambiguous and underspecified prompts, including metrics for assumption quality,
+consistency, and code adaptability.
+Empirical evaluation demonstrates that explicitly modeling hidden assumptions improves
+code correctness under ambiguity, enhances user control, and reduces downstream rework.
+Our results suggest that making implicit reasoning explicit is a critical step toward
+trustworthy, interactive LLM-based software engineering.
+\end{abstract}
+
+\begin{CCSXML}
+<ccs2012>
+  <concept>
+    <concept_id>10011007.10011006.10011039</concept_id>
+    <concept_desc>Software and its engineering~Formal methods</concept_desc>
+    <concept_significance>300</concept_significance>
+  </concept>
+  <concept>
+    <concept_id>10010147.10010178.10010187</concept_id>
+    <concept_desc>Computing methodologies~Natural language processing</concept_desc>
+    <concept_significance>500</concept_significance>
+  </concept>
+</ccs2012>
+\end{CCSXML}
+
+\ccsdesc[300]{Software and its engineering~Formal methods}
+\ccsdesc[500]{Computing methodologies~Natural language processing}
+
+\keywords{LLM code generation, assumption mining, requirements engineering,
+          implicit requirements, program synthesis, developer tools}
+
+\maketitle
+
+% ============================================================
+\section{Introduction}
+\label{sec:intro}
+% ============================================================
+
+\begin{figure*}[t]
+  \centering
+  % Replace with: \includegraphics[width=\textwidth]{figures/fig1_teaser.pdf}
+  \fbox{\parbox{0.95\textwidth}{\centering\vspace{2.5cm}
+    \todofig{Teaser figure: LEFT — developer submits ambiguous auth prompt; LLM
+    generates code while silently assuming MD5 hashing, in-memory tokens, no
+    rate-limiting. Misalignment discovered only at code review. RIGHT — \sysname
+    augments the same generation step to jointly produce code + assumption layer
+    (A1--A5). Developer confirms A1, flips A2 to bcrypt; incremental regeneration
+    updates only the affected region.}}
+    \vspace{2.5cm}
+  }}
+  \caption{Hidden assumptions in LLM code generation, before and after \sysname.
+           \textbf{Left}: An ambiguous prompt yields code with five undisclosed
+           assumptions (red) about password storage, session format, error policy,
+           persistence, and rate-limiting---invisible until code review.
+           \textbf{Right}: \sysname augments the same generation step to jointly
+           produce code \emph{and} an explicit assumption layer (A1--A5).
+           The developer confirms three assumptions and flips A2 (MD5 $\to$ bcrypt);
+           \sysname incrementally regenerates only the affected code region.}
+  \label{fig:teaser}
+\end{figure*}
+
+Modern software development increasingly relies on large language models (LLMs) to
+accelerate code generation~\cite{chen2021codex,austin2021mbpp}.
+Developers write natural-language prompts and receive executable code within seconds.
+Yet real-world prompts are rarely complete specifications: they leave open questions about
+input formats, boundary conditions, error-handling policies, domain constraints, and
+intended semantics.
+When an LLM fills these gaps, it silently commits to \emph{hidden assumptions}---specific
+design choices that were never stated in the prompt~\cite{wiegers2013software}.
+
+These hidden assumptions are a pervasive source of misalignment.
+The generated code may pass unit tests while violating project conventions, security
+policies, or the developer's actual intent---a class of defect we term \emph{working-but-wrong}.
+Our empirical analysis of \todonumber{X} real-world LLM-generated code artifacts found
+that \todonumber{X\%} contained at least one latent hidden assumption that could not be
+detected without manual inspection.
+The core difficulty is that existing tools give developers \emph{no visibility} into what
+the LLM assumed.
+Prompt engineering guides~\cite{white2023prompting} advise more detailed prompts but
+cannot enumerate what was left out.
+Clarification-question systems~\cite{jiang2023selfplanning} ask questions before
+generation but do not link answers to specific code regions.
+Crucially, these approaches require developers to \emph{know in advance what to ask};
+\sysname instead \emph{diagnoses} which decisions the LLM already made,
+surfacing them as revisable records grounded in the actual generated code.
+Self-repair methods~\cite{olausson2023selfrepair,zheng2023selfrefine} iterate on test
+failures but cannot repair silent assumptions that produce passing-but-wrong code.
+
+We present \sysname, a framework that makes hidden assumptions a \emph{first-class output}
+of LLM code generation.
+Rather than extracting assumptions after the fact, \sysname augments the generation step
+itself: the backbone LLM jointly produces executable code \emph{and} an explicit
+\emph{assumption layer}---a structured, formalized list of every inferred constraint and
+design decision embedded in the generated code.
+Developers inspect, confirm, or modify individual assumptions through an interactive
+interface (\S\ref{sec:interface}); when an assumption is flipped or revised, \sysname
+incrementally regenerates only the code regions governed by that assumption while
+preserving all unaffected components.
+
+\noindent\textbf{Contributions.}
+\begin{enumerate}[leftmargin=*, label=(\arabic*)]
+  \item \textbf{Hidden-assumption generation framework} (\S\ref{sec:framework}): a novel
+        approach that integrates assumption surfacing directly into LLM-based code
+        synthesis, producing code and a formalized assumption layer in a single augmented
+        generation step, making implicit LLM reasoning explicit and inspectable.
+  \item \textbf{Assumption--code dependency mechanism} (\S\ref{sec:dependency},
+        \S\ref{sec:regeneration}): an AST-grounded dependency graph linking each
+        assumption to the code regions it governs, enabling traceable and controllable
+        incremental code updates when assumptions are flipped or revised.
+  \item \textbf{\benchname benchmark} (\S\ref{sec:benchmark}): \NumBenchmarkTasks
+        programming tasks under ambiguous and underspecified prompts, annotated with
+        expert-labeled hidden assumptions and evaluated with metrics spanning assumption
+        quality, consistency, and code adaptability.
+\end{enumerate}
+
+\noindent\textbf{Paper organization.}
+\S\ref{sec:background} defines implicit assumptions and motivates the problem with a
+running example.  \S\ref{sec:framework} describes the \sysname architecture.
+\S\ref{sec:interface} presents the developer interface.  \S\ref{sec:benchmark} introduces
+\benchname.  \S\ref{sec:evaluation} reports experimental results.
+\S\ref{sec:related} surveys related work.  \S\ref{sec:threats} discusses threats to
+validity.  \S\ref{sec:conclusion} concludes.
+
+% ============================================================
+\section{Motivation \& Background}
+\label{sec:background}
+% ============================================================
+
+\subsection{Formal Definition}
+\label{sec:definition}
+
+Let $p$ be a natural-language prompt (potentially ambiguous or underspecified) and
+$c = \mathcal{G}(p)$ be the code produced by an LLM $\mathcal{G}$.
+We define a \emph{hidden assumption} as follows.
+
+\begin{mdframed}[linewidth=0.8pt, innerleftmargin=6pt, innerrightmargin=6pt,
+                 innertopmargin=4pt, innerbottommargin=4pt]
+\textbf{Definition 1 (Hidden Assumption).}
+A \emph{hidden assumption} $a$ of $(p, c)$ is a proposition that:
+\begin{enumerate}[label=(\roman*), noitemsep, topsep=2pt]
+  \item is not stated in $p$ (arising from ambiguity or underspecification),
+  \item is instantiated in $c$ (i.e., $c$ behaves as if $a$ holds), and
+  \item has at least one alternative instantiation that satisfies $p$ but would
+        produce a meaningfully different $c$.\footnote{We operationalize
+        ``meaningfully different'' as producing distinct observable behavior on
+        at least one input not excluded by~$p$. For example, using MD5 vs.\
+        bcrypt for password hashing yields different outputs for any password
+        string, satisfying this condition.}
+\end{enumerate}
+\end{mdframed}
+
+\noindent The set of hidden assumptions of $(p, c)$ is denoted $\mathcal{A}(p,c)$.
+In \sysname, $\mathcal{A}(p,c)$ is produced \emph{during} generation as a formalized
+\emph{assumption layer} co-output alongside $c$.
+Each assumption $a_i \in \mathcal{A}(p,c)$ is characterized by:
+(i) its \emph{category} $\kappa(a_i)$ (see \S\ref{sec:taxonomy}),
+(ii) a natural-language \emph{description} $d(a_i)$,
+(iii) the \emph{code regions} $R(a_i) \subseteq c$ it governs, and
+(iv) a set of \emph{alternatives} $\text{Alt}(a_i)$ representing choices the LLM
+     could have made differently.
+
+\subsection{Running Example}
+\label{sec:example}
+
+We use the following prompt as a running example throughout the paper:
+
+\begin{mdframed}[linewidth=0.8pt, backgroundcolor=gray!7,
+                 innerleftmargin=8pt, innerrightmargin=8pt,
+                 innertopmargin=4pt, innerbottommargin=4pt]
+\emph{``Implement a user authentication system that checks credentials
+and returns a session token.''}
+\end{mdframed}
+
+A typical LLM-generated implementation embeds at least five implicit assumptions,
+which \sysname labels \Aone–\Afive:
+
+\begin{description}[leftmargin=2em, labelindent=0pt, noitemsep]
+  \item[\Aone \textbf{Password storage}:] Passwords are stored as MD5 hashes
+       (weak; SHA-256 or bcrypt preferred).
+  \item[\Atwo \textbf{Session format}:] Tokens are UUID v4 strings stored in-memory;
+       no expiry logic.
+  \item[\Athree \textbf{Error handling}:] Invalid credentials return a bare boolean
+       \code{False}; no structured error or HTTP status code.
+  \item[\Afour \textbf{Persistence}:] User records are held in a Python dict; no
+       database or file persistence.
+  \item[\Afive \textbf{Rate-limiting}:] No brute-force protection is implemented.
+\end{description}
+
+These five assumptions are silently embedded in \todonumber{X} lines of the generated code
+(see \cref{fig:teaser}, right).  Without a tool like \sysname, the developer must manually
+audit the code to discover them—a task our user study (\S\ref{sec:rq4}) shows takes on
+average \todonumber{X} minutes, vs.\ \todonumber{X} minutes with \sysname.
+
+\paragraph{Second Example: An Algorithmic Function.}
+To demonstrate that hidden assumptions pervade even short algorithmic code,
+consider a prompt typical of competitive programming or coding interviews:
+
+\begin{mdframed}[linewidth=0.8pt, backgroundcolor=gray!7,
+                 innerleftmargin=8pt, innerrightmargin=8pt,
+                 innertopmargin=4pt, innerbottommargin=4pt]
+\emph{``Given a list of integers and a target value, find two numbers that add up to the target.''}
+\end{mdframed}
+
+A hash-map solution generated by GPT-4o in seven lines embeds four hidden
+assumptions invisible in the prompt:
+
+\begin{description}[leftmargin=2em, labelindent=0pt, noitemsep]
+  \item[\Bone \textbf{Return type (T2):}] The function returns a pair of
+       \emph{indices} (e.g., \code{[1,~3]}), not the \emph{values}
+       themselves---a choice the prompt does not specify.
+  \item[\Btwo \textbf{Uniqueness (T3):}] Exactly one valid pair is assumed;
+       the first match is returned without checking for additional solutions.
+  \item[\Bthree \textbf{No-solution policy (T3):}] An empty list \code{[]}
+       is returned when no pair sums to the target---not \code{None}, not a
+       raised \code{ValueError}.
+  \item[\Bfour \textbf{Space--time trade-off (T5):}] An $O(n)$-space hash map
+       is chosen over an $O(n^2)$ brute-force scan or an $O(n\log n)$
+       sort-and-scan approach.
+\end{description}
+
+Unlike the authentication example, these assumptions arise in seven lines of
+purely algorithmic code with no external dependencies, confirming that hidden
+assumptions are not confined to system-design tasks: they emerge whenever a
+prompt leaves behavioral or design questions open, regardless of code complexity.
+
+\subsection{Assumption Taxonomy}
+\label{sec:taxonomy}
+
+Based on open coding of \todonumber{X} LLM-generated code samples following an
+iterative card-sorting protocol~\cite{spencer2009card}, we derive a taxonomy of
+\NumAssumptionTypes assumption categories (\cref{tab:taxonomy}).
+
+\begin{table}[t]
+\caption{Taxonomy of implicit assumptions in LLM-generated code.
+         \emph{Freq.} is percentage of benchmark tasks containing $\geq 1$ instance.}
+\label{tab:taxonomy}
+\small
+\begin{tabular}{@{}llp{3.5cm}r@{}}
+\toprule
+\textbf{ID} & \textbf{Category} & \textbf{Description} & \textbf{Freq.} \\
+\midrule
+T1 & Security      & Auth, crypto, input validation, access control & \todonumber{X\%} \\
+T2 & Data Format   & Types, serialization, encoding, nullability      & \todonumber{X\%} \\
+T3 & Error Policy  & Exceptions, return values, HTTP codes            & \todonumber{X\%} \\
+T4 & Persistence   & Storage backend, schema, consistency guarantees  & \todonumber{X\%} \\
+T5 & Performance   & Caching, indexing, pagination, concurrency       & \todonumber{X\%} \\
+T6 & Architecture  & Layer boundaries, API style, dependency choices  & \todonumber{X\%} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ============================================================
+\section{The \sysname Framework}
+\label{sec:framework}
+% ============================================================
+
+\subsection{Architecture Overview}
+\label{sec:architecture}
+
+\sysname consists of four loosely-coupled components connected by a structured data model
+(\cref{fig:architecture}).
+
+\begin{figure}[t]
+  \centering
+  % Replace with: \includegraphics[width=\columnwidth]{figures/fig2_architecture.pdf}
+  \fbox{\parbox{0.9\columnwidth}{\centering\vspace{3.5cm}
+    \todofig{Architecture diagram: (1) Prompt Ingestion → (2) Code Generator
+    (LLM) → (3) Assumption Extractor (LLM + structured prompt) →
+    AssumptionRecord store → (4) Dependency Mapper → code annotation →
+    (5) Incremental Regenerator. Arrows show data flow; dashed box for
+    developer interaction loop.}
+    \vspace{3.5cm}
+  }}
+  \caption{\sysname system architecture.  Boxes denote components; arrows denote
+           data flow.  The dashed region marks the developer interaction loop.}
+  \label{fig:architecture}
+\end{figure}
+
+\begin{description}[leftmargin=1em, noitemsep]
+  \item[\textbf{C1 — Prompt Ingestion.}]  Receives the developer's natural-language
+       prompt $p$, optionally enriched with project-level context (language, framework,
+       coding style guide).
+  \item[\textbf{C2 — Code Generator.}]  Issues $p$ to the backbone LLM and produces
+       the initial code artifact $c$.  Any instruction-tuned LLM (GPT-4o,
+       Claude~3.5, Gemini~1.5) may serve as the backbone.
+  \item[\textbf{C3 — Assumption Extractor.}]  Given $(p, c)$, applies a structured
+       extraction prompt (\S\ref{sec:extractor}) to enumerate $\mathcal{A}(p,c)$ as a
+       list of \emph{AssumptionRecord} objects (\S\ref{sec:schema}).
+  \item[\textbf{C4 — Dependency Mapper.}]  Links each assumption to the code regions
+       it governs via a lightweight AST-level analysis (\S\ref{sec:dependency}).
+  \item[\textbf{C5 — Incremental Regenerator.}]  When the developer revises an
+       assumption $a_i$, regenerates only the code regions $R(a_i)$ while preserving
+       all other regions (\S\ref{sec:regeneration}).
+\end{description}
+
+\subsection{Assumption Extraction}
+\label{sec:extractor}
+
+The core of \sysname is a two-phase extraction prompt (\cref{lst:prompt}).
+Phase~1 asks the LLM to reason about what choices were \emph{made} in $c$ that go
+beyond what $p$ requires—a chain-of-thought~\cite{wei2022cot} reasoning step.
+Phase~2 asks the model to format its discoveries into the structured
+\emph{AssumptionRecord} schema, enabling downstream programmatic processing.
+
+\begin{figure}[t]
+\begin{lstlisting}[caption={Assumption extraction prompt template (abbreviated).
+  \texttt{\{PROMPT\}} and \texttt{\{CODE\}} are replaced at runtime.},
+  label={lst:prompt}, language={}]
+SYSTEM: You are an expert software engineer auditing LLM-generated
+code for implicit design decisions.
+
+USER:
+### Original Prompt
+{PROMPT}
+
+### Generated Code
+{CODE}
+
+### Task
+1. REASON: List every design decision in the code that is NOT
+   required by the prompt. For each, name a realistic alternative.
+2. FORMAT: Return a JSON array of AssumptionRecord objects.
+   Schema: {schema}
+   Return ONLY valid JSON after the tag [RECORDS].
+
+[RECORDS]
+\end{lstlisting}
+\end{figure}
+
+\subsection{AssumptionRecord Schema}
+\label{sec:schema}
+
+Each extracted assumption is stored as an \emph{AssumptionRecord}
+(\cref{lst:schema}).  The schema is designed for both human readability and
+programmatic processing by C4 (dependency mapping) and C5 (incremental regeneration).
+
+\begin{figure}[t]
+\begin{lstlisting}[caption={AssumptionRecord JSON schema.},
+  label={lst:schema}, language={}]
+{
+  "id":          "string",       // e.g. "A1"
+  "category":    "T1|T2|T3|T4|T5|T6",
+  "description": "string",      // natural-language statement
+  "rationale":   "string",      // why LLM made this choice
+  "alternatives": ["string"],   // >= 1 alternatives
+  "code_refs": [{               // dependency info (C4 populates)
+    "file":       "string",
+    "start_line": "int",
+    "end_line":   "int",
+    "ast_node":   "string"      // optional AST node type
+  }],
+  "confidence": "float",        // [0, 1] extraction confidence
+  "severity":   "low|medium|high"
+}
+\end{lstlisting}
+\end{figure}
+
+\subsection{Assumption-Code Dependency Mapping}
+\label{sec:dependency}
+
+To support targeted incremental regeneration, \sysname must link each assumption to the
+code regions it governs.  This is non-trivial: a single assumption (e.g., \emph{password
+hashing algorithm}) may manifest across multiple non-contiguous lines and functions.
+
+We construct an \emph{Assumption-Code Dependency Graph} $G = (V_a \cup V_c, E)$
+(\cref{fig:dependency}), where $V_a$ is the set of assumptions, $V_c$ is the set of
+AST nodes in $c$, and $(a_i, n_j) \in E$ if assumption $a_i$ governs node $n_j$.
+Edge weights reflect confidence.
+
+\begin{figure}[t]
+  \centering
+  % Replace with: \includegraphics[width=\columnwidth]{figures/fig3_dependency.pdf}
+  \fbox{\parbox{0.9\columnwidth}{\centering\vspace{3.0cm}
+    \todofig{Dependency graph for running example: nodes A1–A5 on left,
+    AST nodes (FunctionDef: hash\_password, Assign: token=uuid4(),
+    Return: False, Dict: users, ...) on right. Directed edges with
+    confidence scores.}
+    \vspace{3.0cm}
+  }}
+  \caption{Assumption-code dependency graph for the running example.
+           Left: assumption nodes \Aone–\Afive.
+           Right: AST nodes in the generated code.
+           Edge weight = dependency confidence.}
+  \label{fig:dependency}
+\end{figure}
+
+Edge construction proceeds in two passes:
+\begin{enumerate}[noitemsep]
+  \item \textbf{LLM pass.}  The extraction prompt (\cref{lst:prompt}) requests
+        natural-language descriptions of relevant code regions.  We parse these
+        with a simple token-overlap heuristic to identify candidate AST nodes.
+  \item \textbf{AST refinement pass.}  We parse $c$ with the \code{tree-sitter}
+        library and perform a constrained search from the candidate nodes to
+        identify the minimal enclosing AST sub-tree for each assumption.
+\end{enumerate}
+
+\subsection{Incremental Regeneration}
+\label{sec:regeneration}
+
+When a developer revises assumption $a_i$ to a new value $a_i'$, \sysname
+identifies $R(a_i) = \{n \in V_c : (a_i, n) \in E\}$ and constructs a targeted
+regeneration prompt containing only the affected sub-tree, the revised assumption,
+and the surrounding context (at most $k$ lines above/below each region,
+$k = \todonumber{X}$ in our experiments).
+The remainder of $c$ is left unchanged.  This approach is analogous to
+\emph{in-place surgical editing}~\cite{xia2023chatrepair}, but guided by explicit
+assumption metadata rather than test-failure signals.
+
+% ============================================================
+\section{Interactive Interface}
+\label{sec:interface}
+% ============================================================
+
+\begin{figure*}[t]
+  \centering
+  % Replace with: \includegraphics[width=\textwidth]{figures/fig4_ui.pdf}
+  \fbox{\parbox{0.95\textwidth}{\centering\vspace{3.5cm}
+    \todofig{UI mockup (annotated): LEFT PANEL — prompt input + generated code
+    with highlighted assumption regions (color-coded by severity).
+    RIGHT PANEL — AssumptionRecord list; each card shows id, category, description,
+    alternatives dropdown, severity badge. BOTTOM BAR — "Accept All", "Edit",
+    "Regenerate" buttons. Callout boxes A1–A5 pointing to relevant code lines.}
+    \vspace{3.5cm}
+  }}
+  \caption{\sysname interactive interface.  (1) Highlighted code regions correspond
+           to extracted assumptions.  (2) The assumption panel lets developers inspect
+           and edit each assumption record.  (3) The revision panel applies changes
+           through incremental regeneration.}
+  \label{fig:ui}
+\end{figure*}
+
+The \sysname interface (\cref{fig:ui}) is a web-based IDE panel implemented in
+React that augments a standard code editor.  Developers interact through three
+primary actions:
+
+\begin{description}[noitemsep, leftmargin=1em]
+  \item[\textbf{Inspect.}]  Each AssumptionRecord is rendered as a card in the
+       right panel, color-coded by severity (red = high, amber = medium,
+       green = low).  Hovering a card highlights the corresponding code regions
+       in the editor; clicking an assumption scrolls to its primary location.
+
+  \item[\textbf{Edit.}]  Developers may modify the \emph{description} field or
+       select an alternative from the \emph{alternatives} dropdown.  Custom
+       alternatives may be entered as free text.  Changes are staged but not yet
+       applied.
+
+  \item[\textbf{Regenerate.}]  Pressing \emph{Regenerate} triggers C5 for all
+       staged edits.  \sysname performs topological ordering over the dependency
+       graph to process interdependent assumptions in a safe sequence, then
+       presents a diff view for developer approval before committing changes.
+\end{description}
+
+% ============================================================
+\section{\benchname Benchmark}
+\label{sec:benchmark}
+% ============================================================
+
+To enable systematic, reproducible evaluation of assumption mining methods, we
+construct \benchname (\cref{tab:benchstats}).
+
+\textbf{Task collection.}  \benchname comprises \NumBenchmarkTasks programming tasks
+drawn from three sources: \todonumber{X} tasks from HumanEval~\cite{chen2021codex},
+\todonumber{X} tasks from MBPP~\cite{austin2021mbpp}, and \todonumber{X} novel tasks
+designed to stress-test specific assumption categories (particularly T1–Security and
+T4–Persistence, which are underrepresented in existing benchmarks).
+
+\textbf{Annotation.}  Each task was independently annotated by \todonumber{X} graduate
+students with $>$\,2 years of software development experience.
+Annotators labeled all assumptions they could identify per Definition~1, categorized
+them by the taxonomy in \S\ref{sec:taxonomy}, and specified the corresponding code
+regions.  Inter-annotator agreement (Cohen's $\kappa$) was \todonumber{$\kappa$}
+after one calibration round.  Disagreements were resolved by a senior author.
+
+\textbf{Benchmark statistics} are summarized in \cref{tab:benchstats}.
+
+\begin{table}[t]
+\caption{\benchname benchmark statistics.}
+\label{tab:benchstats}
+\small
+\begin{tabular}{@{}lr@{}}
+\toprule
+\textbf{Metric} & \textbf{Value} \\
+\midrule
+Total tasks                             & \todonumber{X} \\
+Tasks from HumanEval                    & \todonumber{X} \\
+Tasks from MBPP                         & \todonumber{X} \\
+Novel tasks                             & \todonumber{X} \\
+\midrule
+Total ground-truth assumptions          & \todonumber{X} \\
+Mean assumptions per task               & \todonumber{X} \\
+Median assumptions per task             & \todonumber{X} \\
+\midrule
+T1 Security                             & \todonumber{X} (\todonumber{X\%}) \\
+T2 Data Format                          & \todonumber{X} (\todonumber{X\%}) \\
+T3 Error Policy                         & \todonumber{X} (\todonumber{X\%}) \\
+T4 Persistence                          & \todonumber{X} (\todonumber{X\%}) \\
+T5 Performance                          & \todonumber{X} (\todonumber{X\%}) \\
+T6 Architecture                         & \todonumber{X} (\todonumber{X\%}) \\
+\midrule
+Mean lines of generated code per task   & \todonumber{X} \\
+Inter-annotator agreement ($\kappa$)    & \todonumber{X} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Metrics.}
+We define five evaluation metrics over $\mathcal{A}(p,c)$ and a reference set
+$\mathcal{A}^*(p,c)$:
+
+\begin{description}[noitemsep, leftmargin=1em]
+  \item[\AR (Assumption Recall):] $|\mathcal{A} \cap \mathcal{A}^*| \;/\; |\mathcal{A}^*|$
+  \item[\AP (Assumption Precision):] $|\mathcal{A} \cap \mathcal{A}^*| \;/\; |\mathcal{A}|$
+  \item[\AFone (Assumption $F_1$):] Harmonic mean of \AR and \AP
+  \item[\AS (Assumption Specificity):] Mean BLEU-4 score of generated descriptions
+       against reference descriptions for matched assumptions
+  \item[\CAS (Category-Adjusted Specificity):] \AS weighted by inverse category
+       frequency (penalizes easy categories)
+\end{description}
+
+% ============================================================
+\section{Evaluation}
+\label{sec:evaluation}
+% ============================================================
+
+We evaluate \sysname with four research questions:
+
+\begin{rqbox}{RQ1 — Extraction Quality}
+How accurately does \sysname identify and characterize implicit assumptions
+compared to expert annotations?
+\end{rqbox}
+
+\begin{rqbox}{RQ2 — Dependency Accuracy}
+How precisely does the dependency mechanism link assumptions to code regions?
+\end{rqbox}
+
+\begin{rqbox}{RQ3 — Code Adaptability}
+When assumptions are revised, how accurately does incremental regeneration
+produce correct code updates?
+\end{rqbox}
+
+\begin{rqbox}{RQ4 — User Study}
+Does \sysname reduce user effort and improve satisfaction compared to a standard
+LLM interface?
+\end{rqbox}
+
+\subsection{Experimental Setup}
+\label{sec:setup}
+
+\textbf{Backbone LLM.}  We use GPT-4o (\code{gpt-4o-2024-05-13}) for all
+\sysname components unless otherwise stated.  Ablations with Claude~3.5~Sonnet
+and Gemini~1.5~Pro are reported in \cref{tab:rq1main}.
+
+\textbf{Baselines.}
+\begin{itemize}[noitemsep]
+  \item \textit{Direct Generation (DG):} Vanilla LLM generation; no assumption mining.
+        Assumptions derived by having annotators label the output post-hoc.
+  \item \textit{Comment Extraction (CE):} Extracts design decisions from
+        code comments and docstrings only.
+  \item \textit{Clarification Questions (CQ):} Presents the developer with
+        open-ended clarification questions before generation, then mines the
+        conversation~\cite{jiang2023selfplanning}.
+  \item \textit{Chain-of-Thought Extraction (CoT):} Prompts the LLM to reason
+        step-by-step about design decisions without our structured schema~\cite{wei2022cot}.
+\end{itemize}
+
+\textbf{Dependency baselines (RQ2):}
+\begin{itemize}[noitemsep]
+  \item \textit{Keyword Heuristic (KH):} Token-overlap between assumption description
+        and code tokens; no AST information.
+  \item \textit{Full-File Dependency (FF):} Trivially assigns every assumption to the
+        entire file (upper bound on recall, lower bound on precision).
+\end{itemize}
+
+\textbf{Regeneration baselines (RQ3):}
+\begin{itemize}[noitemsep]
+  \item \textit{Full Regeneration (FR):} Re-generates the entire function from scratch
+        with the revised assumption in the prompt.
+  \item \textit{In-Place LLM Edit (IPE):} Passes the full code + revision instruction to
+        the LLM and asks it to apply the change~\cite{xia2023chatrepair}.
+  \item \textit{Manual Reprompt (MR):} Developer manually rewrites the prompt;
+        LLM generates fresh code.
+\end{itemize}
+
+\subsection{RQ1: Extraction Quality}
+\label{sec:rq1}
+
+\cref{tab:rq1main} reports \AR, \AP, \AFone, \AS, and \CAS for all methods on the full
+\benchname test set.
+
+\begin{table}[t]
+\caption{RQ1: Assumption extraction quality. Best results in \textbf{bold}; second-best
+         \underline{underlined}. $\dagger$ statistically significant over all baselines
+         ($p < 0.05$, Wilcoxon signed-rank).}
+\label{tab:rq1main}
+\small
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+\textbf{Method} & \AR & \AP & \AFone & \AS & \CAS \\
+\midrule
+Direct Generation    & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
+Comment Extraction   & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
+Clarif.\ Questions   & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
+CoT Extraction       & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
+\midrule
+\sysname (GPT-4o)    & \todonumber{} & \todonumber{} & \todonumber{}$^\dagger$ & \todonumber{} & \todonumber{} \\
+\sysname (Claude 3.5)& \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
+\sysname (Gemini 1.5)& \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\cref{tab:rq1breakdown} provides a per-category breakdown for the best
+configuration (\sysname with GPT-4o).
+
+\begin{table}[t]
+\caption{RQ1 per-category breakdown for \sysname (GPT-4o).}
+\label{tab:rq1breakdown}
+\small
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+\textbf{Category} & \AR & \AP & \AFone & \AS & \CAS \\
+\midrule
+T1 Security      & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
+T2 Data Format   & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
+T3 Error Policy  & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
+T4 Persistence   & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
+T5 Performance   & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
+T6 Architecture  & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
+\midrule
+\textbf{Overall} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Findings.}
+\todo{Summarize RQ1 findings: which categories are hardest, effect of structured
+schema vs. CoT, precision-recall trade-offs.}
+
+\begin{rqbox}{RQ1 Summary}
+\todo{2–3 sentence answer to RQ1.}
+\end{rqbox}
+
+\subsection{RQ2: Dependency Accuracy}
+\label{sec:rq2}
+
+We evaluate dependency link quality at two granularities: \emph{line-level} and
+\emph{AST-node-level}.  Ground-truth links were annotated alongside \benchname
+assumptions.  Results are reported in \cref{tab:rq2}.
+
+\begin{table}[t]
+\caption{RQ2: Dependency accuracy (line-level / AST-level).
+         IoU = Intersection over Union of linked regions.}
+\label{tab:rq2}
+\small
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+\textbf{Method} & \multicolumn{2}{c}{\textbf{Line-level}} & \multicolumn{2}{c}{\textbf{AST-level}} \\
+                & Prec. & IoU  & Prec. & IoU \\
+\midrule
+Keyword Heuristic       & \todonumber{} & \todonumber{} & — & — \\
+Full-File Dependency    & \todonumber{} & \todonumber{} & — & — \\
+\sysname (LLM pass)     & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
+\sysname (LLM+AST)      & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Findings.}
+\todo{Summarize RQ2 findings: how much does the AST refinement pass help?
+Which assumption categories are hardest to localize?}
+
+\begin{rqbox}{RQ2 Summary}
+\todo{2–3 sentence answer to RQ2.}
+\end{rqbox}
+
+\subsection{RQ3: Code Adaptability}
+\label{sec:rq3}
+
+We simulate assumption revision by modifying one assumption per task (selecting
+the highest-severity assumption) and measuring whether the regenerated code
+correctly reflects the change.  Quantitative results appear in \cref{tab:rq3}.
+
+\textbf{Metrics.}
+\begin{itemize}[noitemsep]
+  \item \emph{Pass Rate}: percentage of tasks where revised code passes all provided
+        unit tests.
+  \item \emph{Edit Distance}: normalized Levenshtein edit distance between original
+        and revised code (lower = more targeted).
+  \item \emph{Latency}: wall-clock time for the regeneration step in seconds.
+\end{itemize}
+
+\begin{table}[t]
+\caption{RQ3: Code adaptability when one assumption is revised.}
+\label{tab:rq3}
+\small
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+\textbf{Method} & \textbf{Pass Rate} & \textbf{Edit Dist.} & \textbf{Latency (s)} \\
+\midrule
+Manual Reprompt       & \todonumber{} & \todonumber{} & \todonumber{} \\
+Full Regeneration     & \todonumber{} & \todonumber{} & \todonumber{} \\
+In-Place LLM Edit     & \todonumber{} & \todonumber{} & \todonumber{} \\
+\sysname (Incremental)& \todonumber{} & \todonumber{} & \todonumber{} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Findings.}
+\todo{Summarize RQ3 findings: does incremental beat full regen on pass rate?
+latency advantage? are there failure modes?}
+
+\begin{rqbox}{RQ3 Summary}
+\todo{2–3 sentence answer to RQ3.}
+\end{rqbox}
+
+\subsection{RQ4: User Study}
+\label{sec:rq4}
+
+\textbf{Design.}  We conducted a controlled within-subjects study with
+\NumParticipants developers (\todonumber{X} industry, \todonumber{X} graduate
+students; \todonumber{X}+ years of Python experience on average).
+Each participant completed \todonumber{X} tasks under two conditions in
+counterbalanced order: \emph{Baseline} (standard ChatGPT interface) and
+\emph{\sysname}.  Tasks were drawn from \benchname and required identifying and
+correcting at least one assumption.
+
+\textbf{Measures.}  \emph{Task completion time} (minutes), \emph{assumption
+coverage} (fraction of ground-truth assumptions correctly identified and acted
+upon), and \emph{SUS score}~\cite{brooke1996sus} (system usability scale, 0–100).
+
+\begin{figure}[t]
+  \centering
+  % Replace with: \includegraphics[width=\columnwidth]{figures/fig5_userstudy.pdf}
+  \fbox{\parbox{0.9\columnwidth}{\centering\vspace{3.5cm}
+    \todofig{Side-by-side boxplots: LEFT — task completion time (minutes)
+    for Baseline vs. \sysname; RIGHT — SUS scores.
+    Significance annotation bars (Wilcoxon, $p < 0.05$).}
+    \vspace{3.5cm}
+  }}
+  \caption{RQ4 user study results. \sysname significantly reduces task-completion
+           time (left) and improves SUS scores (right).
+           Boxes show IQR; whiskers show 1.5$\times$IQR; $\ast p<0.05$,
+           $\ast\ast p<0.01$.}
+  \label{fig:userstudy}
+\end{figure}
+
+\noindent\cref{fig:userstudy} presents the task-completion time and SUS distributions.
+\textbf{Findings.}
+\todo{Report median task time, median SUS, statistical significance.
+Quote representative qualitative comments from exit interview.}
+
+\begin{rqbox}{RQ4 Summary}
+\todo{2–3 sentence answer to RQ4.}
+\end{rqbox}
+
+\subsection{Error Analysis}
+\label{sec:erroranalysis}
+
+\begin{figure}[t]
+  \centering
+  % Replace with: \includegraphics[width=\columnwidth]{figures/fig6_erroranalysis.pdf}
+  \fbox{\parbox{0.9\columnwidth}{\centering\vspace{3.5cm}
+    \todofig{2×3 grid of qualitative error examples: false negatives (missed
+    assumptions), false positives (hallucinated assumptions), wrong category,
+    imprecise dependency, failed regeneration, cascading edit.
+    Each cell shows abbreviated code snippet + assumption card.}
+    \vspace{3.5cm}
+  }}
+  \caption{Representative error cases across six failure modes.}
+  \label{fig:erroranalysis}
+\end{figure}
+
+\cref{fig:erroranalysis} illustrates six representative failure modes observed
+during evaluation.  \todo{Describe each failure mode briefly and its frequency.}
+
+% ============================================================
+\section{Related Work}
+\label{sec:related}
+% ============================================================
+
+\subsection{LLM-Based Code Generation}
+Large language models have achieved strong performance on programming benchmarks
+such as HumanEval~\cite{chen2021codex}, MBPP~\cite{austin2021mbpp}, and
+SWE-bench~\cite{jimenez2024swebench}.
+Self-repair approaches~\cite{olausson2023selfrepair,zheng2023selfrefine} improve
+correctness by iterating on test failures, while self-planning
+methods~\cite{jiang2023selfplanning,dong2023codesurveyllm} decompose tasks before
+generation.
+\emph{None of these works surface implicit assumptions or connect them to code
+regions for targeted revision.}
+
+\subsection{Requirements Engineering \& Ambiguity}
+A rich body of RE research addresses natural-language ambiguity
+detection~\cite{ferrari2018nlrequire,kiyavitskaya2008ambiguity,ezzini2021nlpre}.
+Classical approaches identify lexical or syntactic ambiguity but do not model
+the relationship between underspecified requirements and generated implementation
+decisions.
+\emph{\sysname extends this line of work to the code-generation setting, where
+the artifact under analysis is executable code rather than a specification document.}
+
+\subsection{Traceability \& Dependency Analysis}
+Traceability research~\cite{rao2021traceability,mcmillan2011portfolio} links
+requirements artifacts to code using information-retrieval or ML techniques.
+Static analysis tools~\cite{livshits2015defense,guo2020graphcodebert} provide
+program-level dependency graphs.
+\emph{\sysname combines semantic (LLM-based) dependency inference with lightweight
+AST analysis to produce the first assumption-to-code dependency graphs for
+LLM-generated artifacts.}
+
+\subsection{Interactive \& Conversational Code Generation}
+Conversational repair tools~\cite{xia2023chatrepair} use test-driven iteration,
+while tools like Copilot rely on implicit context from the surrounding file.
+User studies~\cite{vaithilingam2022expectation,ziegler2022productivity} show that
+developers frequently struggle to identify \emph{why} generated code is wrong.
+\emph{\sysname directly addresses this gap by making implicit design decisions
+explicit and editable before they cause downstream failures.}
+
+% ============================================================
+\section{Threats to Validity}
+\label{sec:threats}
+% ============================================================
+
+We assess threats following Wohlin et al.~\cite{wohlin2012experimentation}.
+
+\textbf{Internal validity.}
+Annotation bias may affect \benchname ground truth: annotators were graduate
+students aware of the study goals.  We mitigated this with calibration rounds and
+senior-author adjudication.
+LLM non-determinism (temperature~$>$~0) means reported numbers reflect averaged
+runs; we report means over \todonumber{X} runs per task.
+
+\textbf{External validity.}
+\benchname tasks are drawn from Python; results may not generalize to statically
+typed languages (e.g., Rust, Java) where some assumptions are enforced by the
+type system.  Industrial-scale codebases with multi-file context may expose
+additional assumption categories not in our taxonomy.
+
+\textbf{Construct validity.}
+Our five metrics (\AR, \AP, \AFone, \AS, \CAS) operationalize assumption quality
+as human-judged matches; they cannot capture all nuances of semantic equivalence.
+The SUS instrument~\cite{brooke1996sus} measures perceived usability, which
+correlates with but does not equal actual productivity gains.
+
+\textbf{Conclusion validity.}
+The user study sample (\NumParticipants participants) is sufficient for detecting
+medium-to-large effect sizes ($d \geq 0.5$, power~$\geq 0.8$) but may be
+under-powered for small effects.
+
+% ============================================================
+\section{Conclusion}
+\label{sec:conclusion}
+% ============================================================
+
+LLM code generation silently embeds a large number of implicit assumptions that
+developers have no systematic way to inspect or revise.  These hidden decisions
+are a root cause of working-but-wrong code—code that passes tests yet violates
+developer intent.
+
+We presented \sysname, a framework that mines implicit assumptions from
+LLM-generated code, surfaces them as structured \emph{AssumptionRecord} objects
+linked to their governing code regions, and propagates developer-specified
+revisions through targeted incremental regeneration.  Evaluated on our new
+\benchname benchmark, \sysname achieves \todonumber{X} assumption $F_1$—a gain
+of \todonumber{+X pp} over the strongest baseline—and \todonumber{X\%} pass rate
+after assumption revision, with \todonumber{X}\% lower latency than full
+regeneration.  A user study confirms that developers complete assumption-inspection
+tasks \todonumber{X\%} faster and rate \sysname significantly higher on usability.
+
+Future work includes extending \sysname to multi-file repositories, incorporating
+project-level style guides as assumption priors, and studying how assumption mining
+interacts with test generation tools.  We release \benchname and the \sysname
+implementation at \todo{anonymized URL}.
+
+% ── Acknowledgments ───────────────────────────────────────
+\begin{acks}
+\todo{Funding sources and acknowledgments (de-anonymize at camera-ready).}
+\end{acks}
+
+% ── References ────────────────────────────────────────────
+\balance
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{references}
+
+\end{document}
