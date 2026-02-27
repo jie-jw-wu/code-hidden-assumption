@@ -179,7 +179,7 @@ trustworthy, interactive LLM-based software engineering.
     rate-limiting. Misalignment discovered only at code review. RIGHT — \sysname
     augments the same generation step to jointly produce code + assumption layer
     (A1--A5). Developer confirms A1, flips A2 to bcrypt; incremental regeneration
-    updates only the affected region.}}
+    updates only the affected region.}
     \vspace{2.5cm}
   }}
   \caption{Hidden assumptions in LLM code generation, before and after \sysname.
@@ -613,31 +613,32 @@ after one calibration round.  Disagreements were resolved by a senior author.
 \textbf{Benchmark statistics} are summarized in \cref{tab:benchstats}.
 
 \begin{table}[t]
-\caption{\benchname benchmark statistics.}
+\caption{\benchname benchmark statistics (pilot $n=10$; target $n=150$).
+         Full benchmark in preparation; pilot figures shown in parentheses.}
 \label{tab:benchstats}
 \small
 \begin{tabular}{@{}lr@{}}
 \toprule
 \textbf{Metric} & \textbf{Value} \\
 \midrule
-Total tasks                             & \todonumber{X} \\
-Tasks from HumanEval                    & \todonumber{X} \\
-Tasks from MBPP                         & \todonumber{X} \\
-Novel tasks                             & \todonumber{X} \\
+Total tasks (target)                    & 150 (pilot: 10) \\
+Tasks from HumanEval                    & 50 (pilot: 0) \\
+Tasks from MBPP                         & 50 (pilot: 0) \\
+Novel tasks                             & 50 (pilot: 10) \\
 \midrule
-Total ground-truth assumptions          & \todonumber{X} \\
-Mean assumptions per task               & \todonumber{X} \\
-Median assumptions per task             & \todonumber{X} \\
+Total ground-truth assumptions          & \todonumber{X} (pilot: 39) \\
+Mean assumptions per task               & \todonumber{X} (pilot: 3.9) \\
+Median assumptions per task             & \todonumber{X} (pilot: 4.0) \\
 \midrule
-T1 Security                             & \todonumber{X} (\todonumber{X\%}) \\
-T2 Data Format                          & \todonumber{X} (\todonumber{X\%}) \\
-T3 Error Policy                         & \todonumber{X} (\todonumber{X\%}) \\
-T4 Persistence                          & \todonumber{X} (\todonumber{X\%}) \\
-T5 Performance                          & \todonumber{X} (\todonumber{X\%}) \\
-T6 Architecture                         & \todonumber{X} (\todonumber{X\%}) \\
+T1 Input Validation                     & \todonumber{X} (pilot: 5, 12.8\%) \\
+T2 Data Format                          & \todonumber{X} (pilot: 13, 33.3\%) \\
+T3 Error Policy                         & \todonumber{X} (pilot: 8, 20.5\%) \\
+T4 Persistence                          & \todonumber{X} (pilot: 4, 10.3\%) \\
+T5 Performance                          & \todonumber{X} (pilot: 7, 17.9\%) \\
+T6 Security                             & \todonumber{X} (pilot: 2, 5.1\%) \\
 \midrule
-Mean lines of generated code per task   & \todonumber{X} \\
-Inter-annotator agreement ($\kappa$)    & \todonumber{X} \\
+Mean lines of code per task             & \todonumber{X} (pilot: 10.0) \\
+Inter-annotator agreement ($\kappa$)    & \todonumber{X} (pilot: N/A) \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -794,29 +795,44 @@ We evaluate dependency link quality at two granularities: \emph{line-level} and
 assumptions.  Results are reported in \cref{tab:rq2}.
 
 \begin{table}[t]
-\caption{RQ2: Dependency accuracy (line-level / AST-level).
-         IoU = Intersection over Union of linked regions.}
+\caption{RQ2: Dependency accuracy on \benchname (pilot, $n=10$ tasks, 39 assumptions).
+         Accuracy = fraction with IoU $\geq$ 0.5.  IoU = mean Intersection over Union.
+         — = metric not applicable.}
 \label{tab:rq2}
 \small
 \begin{tabular}{@{}lrrrr@{}}
 \toprule
-\textbf{Method} & \multicolumn{2}{c}{\textbf{Line-level}} & \multicolumn{2}{c}{\textbf{AST-level}} \\
-                & Prec. & IoU  & Prec. & IoU \\
+\textbf{Method} & \multicolumn{2}{c}{\textbf{Line-level}} & \multicolumn{2}{c}{\textbf{Category breakdown (Acc.)}} \\
+                & Acc.  & IoU  & Best cat.  & Worst cat. \\
 \midrule
-Keyword Heuristic       & \todonumber{} & \todonumber{} & — & — \\
-Full-File Dependency    & \todonumber{} & \todonumber{} & — & — \\
-\sysname (LLM pass)     & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
+Keyword Heuristic       & 0.513 & 0.547 & T4 (—)   & T1 (—) \\
+Full-File Dependency    & 0.154 & 0.240 & —        & — \\
+\sysname (heuristic)   & 0.333 & 0.346 & T4 (0.75) & T1 (0.00) \\
 \sysname (LLM+AST)      & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \textbf{Findings.}
-\todo{Summarize RQ2 findings: how much does the AST refinement pass help?
-Which assumption categories are hardest to localize?}
+On our pilot benchmark ($n=10$ tasks, 39 expert-annotated assumptions), the
+tree-sitter heuristic achieves 33.3\% accuracy (mean IoU\,=\,0.35) at the
+default 0.5 threshold.  The keyword-heuristic baseline (KH) achieves a higher
+51.3\% on this pilot, primarily because many ground-truth regions are
+single-line; the tree-sitter mapper returns larger AST sub-trees that dilute
+IoU.  The LLM-guided pass (full \sysname, §\ref{sec:dependency}) is expected to
+close this gap by using semantic descriptions rather than surface keywords;
+results on the complete 150-task \benchname are pending.  T4 (Persistence) is
+the easiest category to localise (0.75 accuracy)—variable declarations and
+import statements provide reliable surface cues.  T1 (Input Validation) is
+hardest (0.00)—input handling is spread across multiple lines and rarely
+associated with distinctive identifiers.
 
-\begin{rqbox}{RQ2 Summary}
-\todo{2–3 sentence answer to RQ2.}
+\begin{rqbox}{RQ2 Summary (pilot)}
+The heuristic dependency mapper localises 33\% of assumptions to the correct
+code region (IoU\,$\geq$\,0.5); the LLM-guided pass is hypothesised to improve
+this by leveraging semantic descriptions.  T4 (Persistence) assumptions are
+easiest to localise; T1 (Input Validation) are hardest due to dispersed
+implementation.
 \end{rqbox}
 
 \subsection{RQ3: Code Adaptability}
