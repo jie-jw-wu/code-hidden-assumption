@@ -1,0 +1,295 @@
+{
+  "config": {
+    "benchmark": "data/benchmark_mini.json",
+    "n_tasks": 10,
+    "dry_run": true
+  },
+  "summary": {
+    "AssumptionMiner": {
+      "n": 10,
+      "pass_rate": 1.0,
+      "mean_edit_dist": 0.354,
+      "mean_latency_s": 0.001
+    },
+    "MR": {
+      "n": 10,
+      "pass_rate": 1.0,
+      "mean_edit_dist": 0.3618,
+      "mean_latency_s": 0.001
+    },
+    "FR": {
+      "n": 10,
+      "pass_rate": 1.0,
+      "mean_edit_dist": 0.0,
+      "mean_latency_s": 0.001
+    },
+    "IPE": {
+      "n": 10,
+      "pass_rate": 1.0,
+      "mean_edit_dist": 0.3634,
+      "mean_latency_s": 0.001
+    }
+  },
+  "per_task": [
+    {
+      "task_id": "mini_001",
+      "flipped_assumption_id": "A1",
+      "old_description": "Returns indices of the two numbers, not the values themselves.",
+      "new_description": "return the values",
+      "AssumptionMiner": {
+        "syntax_ok": true,
+        "edit_dist": 0.3333,
+        "latency_s": 0.001
+      },
+      "MR": {
+        "syntax_ok": true,
+        "edit_dist": 0.3434,
+        "latency_s": 0.001
+      },
+      "FR": {
+        "syntax_ok": true,
+        "edit_dist": 0.0,
+        "latency_s": 0.001
+      },
+      "IPE": {
+        "syntax_ok": true,
+        "edit_dist": 0.3453,
+        "latency_s": 0.001
+      }
+    },
+    {
+      "task_id": "mini_002",
+      "flipped_assumption_id": "A1",
+      "old_description": "Passwords are hashed with MD5, a cryptographically broken algorithm.",
+      "new_description": "bcrypt",
+      "AssumptionMiner": {
+        "syntax_ok": true,
+        "edit_dist": 0.2441,
+        "latency_s": 0.001
+      },
+      "MR": {
+        "syntax_ok": true,
+        "edit_dist": 0.2529,
+        "latency_s": 0.001
+      },
+      "FR": {
+        "syntax_ok": true,
+        "edit_dist": 0.0,
+        "latency_s": 0.001
+      },
+      "IPE": {
+        "syntax_ok": true,
+        "edit_dist": 0.2546,
+        "latency_s": 0.001
+      }
+    },
+    {
+      "task_id": "mini_003",
+      "flipped_assumption_id": "A1",
+      "old_description": "Assumes the CSV file has a header row; uses DictReader which treats the first row as field names.",
+      "new_description": "csv.reader returning lists",
+      "AssumptionMiner": {
+        "syntax_ok": true,
+        "edit_dist": 0.4826,
+        "latency_s": 0.001
+      },
+      "MR": {
+        "syntax_ok": true,
+        "edit_dist": 0.4907,
+        "latency_s": 0.001
+      },
+      "FR": {
+        "syntax_ok": true,
+        "edit_dist": 0.0,
+        "latency_s": 0.001
+      },
+      "IPE": {
+        "syntax_ok": true,
+        "edit_dist": 0.4923,
+        "latency_s": 0.001
+      }
+    },
+    {
+      "task_id": "mini_004",
+      "flipped_assumption_id": "A1",
+      "old_description": "Tokenises by splitting on whitespace only; punctuation attached to words is included in the token.",
+      "new_description": "strip punctuation with re.sub before splitting",
+      "AssumptionMiner": {
+        "syntax_ok": true,
+        "edit_dist": 0.5524,
+        "latency_s": 0.001
+      },
+      "MR": {
+        "syntax_ok": true,
+        "edit_dist": 0.5594,
+        "latency_s": 0.001
+      },
+      "FR": {
+        "syntax_ok": true,
+        "edit_dist": 0.0,
+        "latency_s": 0.001
+      },
+      "IPE": {
+        "syntax_ok": true,
+        "edit_dist": 0.5607,
+        "latency_s": 0.001
+      }
+    },
+    {
+      "task_id": "mini_005",
+      "flipped_assumption_id": "A1",
+      "old_description": "Uses FIFO eviction policy (oldest inserted key is evicted), not LRU (least recently used).",
+      "new_description": "LRU (evict least recently accessed)",
+      "AssumptionMiner": {
+        "syntax_ok": true,
+        "edit_dist": 0.2484,
+        "latency_s": 0.001
+      },
+      "MR": {
+        "syntax_ok": true,
+        "edit_dist": 0.2544,
+        "latency_s": 0.001
+      },
+      "FR": {
+        "syntax_ok": true,
+        "edit_dist": 0.0,
+        "latency_s": 0.001
+      },
+      "IPE": {
+        "syntax_ok": true,
+        "edit_dist": 0.2556,
+        "latency_s": 0.001
+      }
+    },
+    {
+      "task_id": "mini_006",
+      "flipped_assumption_id": "A1",
+      "old_description": "Uses 0-indexed convention: fibonacci(0)=0, fibonacci(1)=1.",
+      "new_description": "1-indexed: fibonacci(1)=1, fibonacci(2)=1",
+      "AssumptionMiner": {
+        "syntax_ok": true,
+        "edit_dist": 0.3496,
+        "latency_s": 0.001
+      },
+      "MR": {
+        "syntax_ok": true,
+        "edit_dist": 0.3583,
+        "latency_s": 0.001
+      },
+      "FR": {
+        "syntax_ok": true,
+        "edit_dist": 0.0,
+        "latency_s": 0.001
+      },
+      "IPE": {
+        "syntax_ok": true,
+        "edit_dist": 0.36,
+        "latency_s": 0.001
+      }
+    },
+    {
+      "task_id": "mini_007",
+      "flipped_assumption_id": "A1",
+      "old_description": "Returns a list of duplicate elements, not a dict mapping element to count or occurrence indices.",
+      "new_description": "dict of {element: count}",
+      "AssumptionMiner": {
+        "syntax_ok": true,
+        "edit_dist": 0.4087,
+        "latency_s": 0.001
+      },
+      "MR": {
+        "syntax_ok": true,
+        "edit_dist": 0.4167,
+        "latency_s": 0.001
+      },
+      "FR": {
+        "syntax_ok": true,
+        "edit_dist": 0.0,
+        "latency_s": 0.001
+      },
+      "IPE": {
+        "syntax_ok": true,
+        "edit_dist": 0.4182,
+        "latency_s": 0.001
+      }
+    },
+    {
+      "task_id": "mini_008",
+      "flipped_assumption_id": "A1",
+      "old_description": "Assumes INI format; does not support JSON, YAML, TOML, or other config formats.",
+      "new_description": "json.load",
+      "AssumptionMiner": {
+        "syntax_ok": true,
+        "edit_dist": 0.2921,
+        "latency_s": 0.001
+      },
+      "MR": {
+        "syntax_ok": true,
+        "edit_dist": 0.3007,
+        "latency_s": 0.001
+      },
+      "FR": {
+        "syntax_ok": true,
+        "edit_dist": 0.0,
+        "latency_s": 0.001
+      },
+      "IPE": {
+        "syntax_ok": true,
+        "edit_dist": 0.3024,
+        "latency_s": 0.001
+      }
+    },
+    {
+      "task_id": "mini_009",
+      "flipped_assumption_id": "A1",
+      "old_description": "Uses a sliding window (timestamp log) algorithm rather than token bucket or fixed window counter.",
+      "new_description": "token bucket algorithm",
+      "AssumptionMiner": {
+        "syntax_ok": true,
+        "edit_dist": 0.2204,
+        "latency_s": 0.001
+      },
+      "MR": {
+        "syntax_ok": true,
+        "edit_dist": 0.2261,
+        "latency_s": 0.001
+      },
+      "FR": {
+        "syntax_ok": true,
+        "edit_dist": 0.0,
+        "latency_s": 0.001
+      },
+      "IPE": {
+        "syntax_ok": true,
+        "edit_dist": 0.2273,
+        "latency_s": 0.001
+      }
+    },
+    {
+      "task_id": "mini_010",
+      "flipped_assumption_id": "A1",
+      "old_description": "Appends to a flat text file ('a' mode); no log rotation, size limits, or structured format.",
+      "new_description": "logging module with RotatingFileHandler",
+      "AssumptionMiner": {
+        "syntax_ok": true,
+        "edit_dist": 0.4082,
+        "latency_s": 0.001
+      },
+      "MR": {
+        "syntax_ok": true,
+        "edit_dist": 0.4156,
+        "latency_s": 0.001
+      },
+      "FR": {
+        "syntax_ok": true,
+        "edit_dist": 0.0,
+        "latency_s": 0.001
+      },
+      "IPE": {
+        "syntax_ok": true,
+        "edit_dist": 0.4171,
+        "latency_s": 0.001
+      }
+    }
+  ]
+}

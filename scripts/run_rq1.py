@@ -96,6 +96,8 @@ def main() -> None:
     if args.backend:
         import os
         os.environ["ASSUMPTION_MINER_BACKEND"] = args.backend
+        # generator._BACKEND is evaluated at import time, so patch it directly.
+        generator._BACKEND = args.backend
 
     bench_path = Path(args.benchmark)
     out_path = Path(args.out)

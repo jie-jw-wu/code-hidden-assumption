@@ -140,32 +140,20 @@ def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(
         description="Export pilot assumptions to CSV for annotation, or compute κ."
     )
-    sub = p.add_subparsers(dest="cmd")
-
-    exp = sub.add_parser("export", help="Export assumptions to annotation CSV (default)")
-    exp.add_argument("--in", dest="infile", default=str(DEFAULT_IN))
-    exp.add_argument("--out", default=str(DEFAULT_OUT))
-
-    kap = sub.add_parser("kappa", help="Compute Cohen's κ between two coded CSVs")
-    kap.add_argument("csv1")
-    kap.add_argument("csv2")
-
-    # Allow running without a subcommand (defaults to export)
-    p.add_argument("--in", dest="infile", default=str(DEFAULT_IN))
-    p.add_argument("--out", default=str(DEFAULT_OUT))
+    p.add_argument("--in", dest="infile", default=str(DEFAULT_IN),
+                   help="Input pilot_assumptions.json (default: data/pilot_assumptions.json)")
+    p.add_argument("--out", default=str(DEFAULT_OUT),
+                   help="Output CSV path (default: data/annotation_sheet.csv)")
     p.add_argument("--kappa", nargs=2, metavar=("CSV1", "CSV2"),
-                   help="Compute κ between two coder CSVs instead of exporting")
+                   help="Compute Cohen's κ between two completed coder CSVs instead of exporting")
     return p.parse_args()
 
 
 def main() -> None:
     args = parse_args()
 
-    if args.cmd == "kappa" or getattr(args, "kappa", None):
-        if args.cmd == "kappa":
-            compute_kappa(Path(args.csv1), Path(args.csv2))
-        else:
-            compute_kappa(Path(args.kappa[0]), Path(args.kappa[1]))
+    if args.kappa:
+        compute_kappa(Path(args.kappa[0]), Path(args.kappa[1]))
     else:
         in_path = Path(args.infile)
         out_path = Path(args.out)

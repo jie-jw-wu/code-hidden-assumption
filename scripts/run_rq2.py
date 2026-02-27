@@ -11,14 +11,18 @@ Evaluation:
   Overlap metric: IoU (intersection-over-union) of line ranges.
   A prediction is "correct" if IoU ≥ OVERLAP_THRESHOLD.
 
+Methods evaluated:
+  AssumptionMiner — tree-sitter AST + keyword overlap (dependency.map_dependencies)
+  KH (Keyword Heuristic) — find lines containing keywords from assumption description
+  FF (Full-File)          — predict entire file as the code region
+
 Reports:
-  - Per-category accuracy
-  - Overall accuracy (% correct)
-  - Mean IoU across all assumptions
+  - Per-category accuracy per method
+  - Overall accuracy (% correct) and mean IoU per method
 
 Usage:
     python scripts/run_rq2.py
-    python scripts/run_rq2.py --benchmark data/benchmark.json \\
+    python scripts/run_rq2.py --benchmark data/benchmark_mini.json \\
                                --assumptions data/pilot_assumptions.json \\
                                --out data/rq2_results.json
 """
@@ -34,13 +38,15 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
+import re
+
 from assumption_miner.dependency import map_dependencies  # noqa: E402
-from assumption_miner.schema import AssumptionRecord  # noqa: E402
+from assumption_miner.schema import AssumptionRecord, CodeRef  # noqa: E402
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s  %(message)s")
 log = logging.getLogger(__name__)
 
-DEFAULT_BENCHMARK = REPO_ROOT / "data" / "benchmark.json"
+DEFAULT_BENCHMARK = REPO_ROOT / "data" / "benchmark_mini.json"
 DEFAULT_ASSUMPTIONS = REPO_ROOT / "data" / "pilot_assumptions.json"
 DEFAULT_OUT = REPO_ROOT / "data" / "rq2_results.json"
 
@@ -71,6 +77,80 @@ def best_iou(pred_refs: list[dict], gt_refs: list[dict]) -> float:
             iou = line_iou(p["start_line"], p["end_line"], g["start_line"], g["end_line"])
             best = max(best, iou)
     return best
+
+
+# --------------------------------------------------------------------------- #
+# Baselines                                                                    #
+# --------------------------------------------------------------------------- #
+
+def _keywords_from(record: AssumptionRecord) -> list[str]:
+    tokens = []
+    for text in [record.description] + record.alternatives:
+        tokens.extend(
+            w.lower().strip(".,;:'\"()[]{}") for w in text.split() if len(w) > 3
+        )
+    return list(set(tokens))
+
+
+def keyword_heuristic(record: AssumptionRecord, code: str, filename: str) -> list[dict]:
+    """KH baseline: match lines that contain keywords from the assumption description."""
+    keywords = _keywords_from(record)
+    refs = []
+    seen: set[tuple[int, int]] = set()
+    for lineno, line in enumerate(code.splitlines(), 1):
+        if any(kw in line.lower() for kw in keywords):
+            key = (lineno, lineno)
+            if key not in seen:
+                seen.add(key)
+                refs.append({"file": filename, "start_line": lineno, "end_line": lineno})
+    return refs
+
+
+def full_file(code: str, filename: str) -> list[dict]:
+    """FF baseline: predict the entire file as the code region."""
+    n = len(code.splitlines())
+    return [{"file": filename, "start_line": 1, "end_line": n}]
+
+
+def _eval_refs(pred_refs: list[dict], gt_refs: list[dict], threshold: float) -> tuple[float, bool]:
+    iou = best_iou(pred_refs, gt_refs)
+    correct = iou >= threshold if gt_refs else None
+    return iou, correct
+
+
+def _cat_summary(rows: list[dict], method_key: str, threshold: float) -> dict[str, dict]:
+    per_cat: dict[str, list[float]] = {c: [] for c in CATEGORIES}
+    for r in rows:
+        iou = r.get(f"{method_key}_iou")
+        if iou is not None:
+            per_cat[r["category"]].append(iou)
+    out = {}
+    for cat in CATEGORIES:
+        ious = per_cat[cat]
+        if ious:
+            out[cat] = {
+                "n": len(ious),
+                "mean_iou": round(sum(ious) / len(ious), 4),
+                "accuracy": round(sum(1 for v in ious if v >= threshold) / len(ious), 4),
+            }
+        else:
+            out[cat] = {"n": 0, "mean_iou": None, "accuracy": None}
+    return out
+
+
+def _overall_summary(rows: list[dict], method_key: str, threshold: float) -> dict:
+    evaluated = [r for r in rows if r.get(f"{method_key}_iou") is not None]
+    if not evaluated:
+        return {"n_evaluated": 0, "accuracy": None, "mean_iou": None}
+    n_correct = sum(1 for r in evaluated if r.get(f"{method_key}_iou", 0) >= threshold)
+    mean_iou = sum(r[f"{method_key}_iou"] for r in evaluated) / len(evaluated)
+    return {
+        "n_evaluated": len(evaluated),
+        "n_correct": n_correct,
+        "accuracy": round(n_correct / len(evaluated), 4),
+        "mean_iou": round(mean_iou, 4),
+        "threshold": threshold,
+    }
 
 
 # --------------------------------------------------------------------------- #
@@ -120,7 +200,6 @@ def main() -> None:
         extraction_results = extraction_results[: args.limit]
 
     per_assumption: list[dict] = []
-    per_cat: dict[str, list[float]] = {c: [] for c in CATEGORIES}
 
     for entry in extraction_results:
         sample_id = entry.get("sample_id", "")
@@ -132,84 +211,63 @@ def main() -> None:
         if not raw_assumptions:
             continue
 
-        # Reconstruct AssumptionRecord objects and run mapper
-        records = []
+        # Reconstruct AssumptionRecord objects.
+        records: list[AssumptionRecord] = []
         for a in raw_assumptions:
             try:
                 records.append(AssumptionRecord.from_dict(a))
             except Exception as exc:  # noqa: BLE001
                 log.warning("Skipping malformed assumption in %s: %s", sample_id, exc)
 
-        log.info("Mapping dependencies for %s (%d assumptions) …", sample_id, len(records))
-        map_dependencies(records, code, filename=sample_id)
+        log.info("Evaluating %s (%d assumptions) …", sample_id, len(records))
 
-        for record in records:
-            pred_refs = [r.to_dict() for r in record.code_refs]
+        # AssumptionMiner: run tree-sitter dependency mapper.
+        am_records = [AssumptionRecord.from_dict(r.to_dict()) for r in records]  # copies
+        map_dependencies(am_records, code, filename=sample_id)
+
+        for record, am_record in zip(records, am_records):
             gt_key = f"{sample_id}:{record.id}"
             gt_refs = gt_map.get(gt_key, [])
 
-            iou = best_iou(pred_refs, gt_refs) if gt_refs else None
-            correct = (iou is not None and iou >= args.threshold)
+            # AssumptionMiner predictions.
+            am_pred = [r.to_dict() for r in am_record.code_refs]
+            am_iou = best_iou(am_pred, gt_refs) if gt_refs else None
+
+            # KH baseline predictions.
+            kh_pred = keyword_heuristic(record, code, sample_id)
+            kh_iou = best_iou(kh_pred, gt_refs) if gt_refs else None
+
+            # FF baseline predictions.
+            ff_pred = full_file(code, sample_id)
+            ff_iou = best_iou(ff_pred, gt_refs) if gt_refs else None
 
             row = {
                 "sample_id": sample_id,
                 "assumption_id": record.id,
                 "category": record.category,
-                "n_predicted_refs": len(pred_refs),
                 "n_gt_refs": len(gt_refs),
-                "best_iou": round(iou, 4) if iou is not None else None,
-                "correct": correct if gt_refs else None,
+                "am_iou": round(am_iou, 4) if am_iou is not None else None,
+                "kh_iou": round(kh_iou, 4) if kh_iou is not None else None,
+                "ff_iou": round(ff_iou, 4) if ff_iou is not None else None,
             }
             per_assumption.append(row)
 
-            if gt_refs and iou is not None:
-                per_cat[record.category].append(iou)
-
-    # Summary statistics
-    evaluated = [r for r in per_assumption if r["correct"] is not None]
-    if evaluated:
-        n_correct = sum(1 for r in evaluated if r["correct"])
-        accuracy = n_correct / len(evaluated)
-        mean_iou = sum(r["best_iou"] for r in evaluated) / len(evaluated)
-    else:
-        accuracy = mean_iou = 0.0
-        log.warning(
-            "No assumptions had ground-truth code_refs — "
-            "accuracy/IoU cannot be computed. "
-            "Check that benchmark.json has ground_truth_assumptions with code_refs."
-        )
-
-    cat_summary = {}
-    for cat in CATEGORIES:
-        ious = per_cat[cat]
-        if ious:
-            cat_summary[cat] = {
-                "n": len(ious),
-                "mean_iou": round(sum(ious) / len(ious), 4),
-                "accuracy": round(sum(1 for v in ious if v >= args.threshold) / len(ious), 4),
-            }
-        else:
-            cat_summary[cat] = {"n": 0, "mean_iou": None, "accuracy": None}
-
+    methods = ["am", "kh", "ff"]
     results = {
-        "overall": {
-            "n_evaluated": len(evaluated),
-            "n_correct": sum(1 for r in evaluated if r["correct"]) if evaluated else 0,
-            "accuracy": round(accuracy, 4),
-            "mean_iou": round(mean_iou, 4),
-            "threshold": args.threshold,
-        },
-        "per_category": cat_summary,
+        "overall": {m: _overall_summary(per_assumption, m, args.threshold) for m in methods},
+        "per_category": {m: _cat_summary(per_assumption, m, args.threshold) for m in methods},
         "per_assumption": per_assumption,
+        "threshold": args.threshold,
     }
 
     out_path.write_text(json.dumps(results, indent=2), encoding="utf-8")
 
     log.info("=" * 50)
-    log.info("RQ2 Results:")
-    log.info("  Evaluated: %d assumptions", len(evaluated))
-    log.info("  Accuracy:  %.3f", accuracy)
-    log.info("  Mean IoU:  %.3f", mean_iou)
+    log.info("RQ2 Results (IoU threshold=%.2f):", args.threshold)
+    for m in methods:
+        s = results["overall"][m]
+        log.info("  %-4s  accuracy=%-6s  mean_iou=%s",
+                 m.upper(), s.get("accuracy"), s.get("mean_iou"))
     log.info("Wrote detailed results to %s", out_path)
 
 

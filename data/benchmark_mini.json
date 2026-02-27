@@ -1,0 +1,404 @@
+[
+  {
+    "id": "mini_001",
+    "source": "novel",
+    "prompt": "Given a list of integers and a target sum, return the indices of the two numbers that add up to the target.",
+    "code": "def two_sum(nums, target):\n    seen = {}\n    for i, num in enumerate(nums):\n        complement = target - num\n        if complement in seen:\n            return [seen[complement], i]\n        seen[num] = i\n    return []\n",
+    "annotation_status": "done",
+    "ground_truth_assumptions": [
+      {
+        "id": "A1",
+        "category": "T2",
+        "description": "Returns indices of the two numbers, not the values themselves.",
+        "rationale": "LeetCode-style convention; indices enable in-place manipulation.",
+        "alternatives": ["return the values", "return a tuple of (index, value) pairs"],
+        "code_refs": [{"file": "<generated>", "start_line": 5, "end_line": 5, "ast_node": "return_statement"}]
+      },
+      {
+        "id": "A2",
+        "category": "T3",
+        "description": "Returns empty list [] when no valid pair exists, rather than None or raising an exception.",
+        "rationale": "Empty list is a safe sentinel that avoids NoneType errors in callers.",
+        "alternatives": ["return None", "raise ValueError('No solution found')"],
+        "code_refs": [{"file": "<generated>", "start_line": 7, "end_line": 7, "ast_node": "return_statement"}]
+      },
+      {
+        "id": "A3",
+        "category": "T3",
+        "description": "Returns only the first valid pair found, even if multiple pairs satisfy the target.",
+        "rationale": "Problem typically implies a unique solution exists.",
+        "alternatives": ["collect and return all valid pairs", "raise an error if multiple solutions exist"],
+        "code_refs": [{"file": "<generated>", "start_line": 5, "end_line": 5, "ast_node": "return_statement"}]
+      },
+      {
+        "id": "A4",
+        "category": "T5",
+        "description": "Uses a hash-map (O(n) time, O(n) space) rather than a brute-force O(n^2) or sort-based O(n log n) approach.",
+        "rationale": "Hash-map is the canonical optimal solution for this problem.",
+        "alternatives": ["nested loop O(n^2)", "sort + two-pointer O(n log n) O(1) space"],
+        "code_refs": [{"file": "<generated>", "start_line": 2, "end_line": 6, "ast_node": "function_definition"}]
+      }
+    ]
+  },
+  {
+    "id": "mini_002",
+    "source": "novel",
+    "prompt": "Implement a user authentication system that verifies credentials and returns a session token.",
+    "code": "import hashlib\nimport uuid\n\nUSERS = {}\n\ndef register(username, password):\n    USERS[username] = hashlib.md5(password.encode()).hexdigest()\n\ndef authenticate(username, password):\n    hashed = hashlib.md5(password.encode()).hexdigest()\n    if USERS.get(username) == hashed:\n        return str(uuid.uuid4())\n    return False\n",
+    "annotation_status": "done",
+    "ground_truth_assumptions": [
+      {
+        "id": "A1",
+        "category": "T6",
+        "description": "Passwords are hashed with MD5, a cryptographically broken algorithm.",
+        "rationale": "MD5 is available in the standard library without extra dependencies.",
+        "alternatives": ["bcrypt", "argon2", "PBKDF2 with SHA-256"],
+        "code_refs": [{"file": "<generated>", "start_line": 7, "end_line": 7, "ast_node": "call"}]
+      },
+      {
+        "id": "A2",
+        "category": "T4",
+        "description": "User records are stored in a module-level Python dict (in-memory, non-persistent).",
+        "rationale": "Simple in-memory store requires no external dependency.",
+        "alternatives": ["SQLite database", "PostgreSQL", "file-based JSON store"],
+        "code_refs": [{"file": "<generated>", "start_line": 4, "end_line": 4, "ast_node": "assignment"}]
+      },
+      {
+        "id": "A3",
+        "category": "T3",
+        "description": "Returns boolean False on failed authentication instead of raising an exception.",
+        "rationale": "Boolean return avoids exception handling boilerplate for callers.",
+        "alternatives": ["raise AuthenticationError", "return None", "raise ValueError"],
+        "code_refs": [{"file": "<generated>", "start_line": 13, "end_line": 13, "ast_node": "return_statement"}]
+      },
+      {
+        "id": "A4",
+        "category": "T2",
+        "description": "Session token is a UUID v4 string with no expiry metadata.",
+        "rationale": "UUID v4 is random and unique; token management (expiry) left to caller.",
+        "alternatives": ["JWT with expiry claim", "opaque token stored server-side with TTL", "HMAC-signed token"],
+        "code_refs": [{"file": "<generated>", "start_line": 12, "end_line": 12, "ast_node": "return_statement"}]
+      },
+      {
+        "id": "A5",
+        "category": "T5",
+        "description": "No rate limiting or brute-force protection is implemented.",
+        "rationale": "Rate limiting is an infrastructure concern typically handled outside application code.",
+        "alternatives": ["exponential backoff lockout", "account lockout after N failures", "CAPTCHA after N attempts"],
+        "code_refs": [{"file": "<generated>", "start_line": 10, "end_line": 13, "ast_node": "function_definition"}]
+      }
+    ]
+  },
+  {
+    "id": "mini_003",
+    "source": "novel",
+    "prompt": "Read a CSV file and return the data as a list of records.",
+    "code": "import csv\n\ndef read_csv(filepath):\n    with open(filepath, encoding='utf-8') as f:\n        reader = csv.DictReader(f)\n        return [dict(row) for row in reader]\n",
+    "annotation_status": "done",
+    "ground_truth_assumptions": [
+      {
+        "id": "A1",
+        "category": "T1",
+        "description": "Assumes the CSV file has a header row; uses DictReader which treats the first row as field names.",
+        "rationale": "DictReader is idiomatic for structured CSVs; no mention of headerless files in prompt.",
+        "alternatives": ["csv.reader returning lists", "explicit fieldnames parameter", "auto-detect header"],
+        "code_refs": [{"file": "<generated>", "start_line": 5, "end_line": 5, "ast_node": "call"}]
+      },
+      {
+        "id": "A2",
+        "category": "T2",
+        "description": "Returns a list of dicts (one per row) rather than a list of lists or a pandas DataFrame.",
+        "rationale": "Dict representation preserves column names and is framework-agnostic.",
+        "alternatives": ["list of lists", "pandas DataFrame", "generator of dicts (lazy)"],
+        "code_refs": [{"file": "<generated>", "start_line": 6, "end_line": 6, "ast_node": "return_statement"}]
+      },
+      {
+        "id": "A3",
+        "category": "T3",
+        "description": "No error handling: raises raw FileNotFoundError or PermissionError if the file cannot be opened.",
+        "rationale": "Caller is expected to handle filesystem exceptions.",
+        "alternatives": ["return empty list on FileNotFoundError", "raise custom CsvReadError", "log and return None"],
+        "code_refs": [{"file": "<generated>", "start_line": 4, "end_line": 4, "ast_node": "call"}]
+      },
+      {
+        "id": "A4",
+        "category": "T1",
+        "description": "File is read with UTF-8 encoding; non-UTF-8 files will raise UnicodeDecodeError.",
+        "rationale": "UTF-8 is the modern default; no encoding is specified in the prompt.",
+        "alternatives": ["latin-1 (no decode errors)", "detect encoding with chardet", "errors='replace'"],
+        "code_refs": [{"file": "<generated>", "start_line": 4, "end_line": 4, "ast_node": "call"}]
+      }
+    ]
+  },
+  {
+    "id": "mini_004",
+    "source": "novel",
+    "prompt": "Count the frequency of each word in a text string and return the result.",
+    "code": "def word_count(text):\n    counts = {}\n    for word in text.lower().split():\n        counts[word] = counts.get(word, 0) + 1\n    return counts\n",
+    "annotation_status": "done",
+    "ground_truth_assumptions": [
+      {
+        "id": "A1",
+        "category": "T1",
+        "description": "Tokenises by splitting on whitespace only; punctuation attached to words is included in the token.",
+        "rationale": "str.split() is the simplest tokenizer; no mention of punctuation handling in prompt.",
+        "alternatives": ["strip punctuation with re.sub before splitting", "use nltk word_tokenize", "split on \\b word boundaries"],
+        "code_refs": [{"file": "<generated>", "start_line": 3, "end_line": 3, "ast_node": "call"}]
+      },
+      {
+        "id": "A2",
+        "category": "T1",
+        "description": "Case-folded to lowercase before counting; 'Word' and 'word' are treated as the same token.",
+        "rationale": "Case-insensitive counting is the most common expectation.",
+        "alternatives": ["case-sensitive counting", "title-case normalisation only", "locale-aware folding"],
+        "code_refs": [{"file": "<generated>", "start_line": 3, "end_line": 3, "ast_node": "call"}]
+      },
+      {
+        "id": "A3",
+        "category": "T2",
+        "description": "Returns a plain dict mapping word to count, not a Counter or sorted list of (word, count) tuples.",
+        "rationale": "Plain dict is the simplest representation; ordering and ranking left to caller.",
+        "alternatives": ["collections.Counter", "sorted list of (count, word) pairs", "list of (word, frequency) tuples sorted by frequency"],
+        "code_refs": [{"file": "<generated>", "start_line": 5, "end_line": 5, "ast_node": "return_statement"}]
+      }
+    ]
+  },
+  {
+    "id": "mini_005",
+    "source": "novel",
+    "prompt": "Implement a key-value cache with a fixed maximum capacity.",
+    "code": "class SimpleCache:\n    def __init__(self, capacity):\n        self._store = {}\n        self._capacity = capacity\n        self._order = []\n\n    def get(self, key):\n        return self._store.get(key)\n\n    def put(self, key, value):\n        if key not in self._store:\n            if len(self._store) >= self._capacity:\n                oldest = self._order.pop(0)\n                del self._store[oldest]\n            self._order.append(key)\n        self._store[key] = value\n",
+    "annotation_status": "done",
+    "ground_truth_assumptions": [
+      {
+        "id": "A1",
+        "category": "T5",
+        "description": "Uses FIFO eviction policy (oldest inserted key is evicted), not LRU (least recently used).",
+        "rationale": "FIFO is simpler to implement; LRU requires tracking access time.",
+        "alternatives": ["LRU (evict least recently accessed)", "LFU (evict least frequently used)", "random eviction"],
+        "code_refs": [{"file": "<generated>", "start_line": 12, "end_line": 14, "ast_node": "if_statement"}]
+      },
+      {
+        "id": "A2",
+        "category": "T4",
+        "description": "Cache is purely in-memory; all entries are lost on process restart.",
+        "rationale": "In-memory is the simplest implementation; persistence not mentioned in prompt.",
+        "alternatives": ["Redis-backed cache", "file-based persistence", "SQLite backing store"],
+        "code_refs": [{"file": "<generated>", "start_line": 3, "end_line": 3, "ast_node": "assignment"}]
+      },
+      {
+        "id": "A3",
+        "category": "T2",
+        "description": "Returns None on a cache miss instead of raising KeyError or returning a sentinel object.",
+        "rationale": "None is a natural Python sentinel for missing values.",
+        "alternatives": ["raise KeyError", "return a default parameter value", "return a CacheMiss sentinel object"],
+        "code_refs": [{"file": "<generated>", "start_line": 8, "end_line": 8, "ast_node": "return_statement"}]
+      },
+      {
+        "id": "A4",
+        "category": "T5",
+        "description": "No time-to-live (TTL) expiry; entries remain until evicted by capacity or explicit deletion.",
+        "rationale": "TTL adds complexity not implied by 'fixed maximum capacity'.",
+        "alternatives": ["per-entry TTL", "global TTL for all entries", "sliding expiration window"],
+        "code_refs": [{"file": "<generated>", "start_line": 1, "end_line": 16, "ast_node": "class_definition"}]
+      }
+    ]
+  },
+  {
+    "id": "mini_006",
+    "source": "novel",
+    "prompt": "Compute the nth Fibonacci number.",
+    "code": "def fibonacci(n):\n    if n < 0:\n        raise ValueError(f'n must be non-negative, got {n}')\n    if n == 0:\n        return 0\n    if n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n",
+    "annotation_status": "done",
+    "ground_truth_assumptions": [
+      {
+        "id": "A1",
+        "category": "T2",
+        "description": "Uses 0-indexed convention: fibonacci(0)=0, fibonacci(1)=1.",
+        "rationale": "0-indexed is the mathematical convention (F_0=0).",
+        "alternatives": ["1-indexed: fibonacci(1)=1, fibonacci(2)=1", "return sequence up to n"],
+        "code_refs": [{"file": "<generated>", "start_line": 4, "end_line": 6, "ast_node": "if_statement"}]
+      },
+      {
+        "id": "A2",
+        "category": "T3",
+        "description": "Raises ValueError for negative inputs rather than returning None or 0.",
+        "rationale": "Fibonacci is not defined for negative integers; raising makes the contract explicit.",
+        "alternatives": ["return None for n < 0", "return 0", "support negative Fibonacci (negafibonacci)"],
+        "code_refs": [{"file": "<generated>", "start_line": 2, "end_line": 3, "ast_node": "if_statement"}]
+      },
+      {
+        "id": "A3",
+        "category": "T5",
+        "description": "Uses an iterative O(n) approach rather than recursive (O(2^n)) or matrix exponentiation (O(log n)).",
+        "rationale": "Iterative avoids stack overflow for large n while being easy to understand.",
+        "alternatives": ["recursive with memoization O(n)", "matrix exponentiation O(log n)", "closed-form Binet's formula O(1) (float precision issues)"],
+        "code_refs": [{"file": "<generated>", "start_line": 8, "end_line": 10, "ast_node": "for_statement"}]
+      }
+    ]
+  },
+  {
+    "id": "mini_007",
+    "source": "novel",
+    "prompt": "Find all duplicate elements in a list.",
+    "code": "def find_duplicates(lst):\n    seen = set()\n    duplicates = []\n    for item in lst:\n        if item in seen and item not in duplicates:\n            duplicates.append(item)\n        seen.add(item)\n    return duplicates\n",
+    "annotation_status": "done",
+    "ground_truth_assumptions": [
+      {
+        "id": "A1",
+        "category": "T2",
+        "description": "Returns a list of duplicate elements, not a dict mapping element to count or occurrence indices.",
+        "rationale": "List of duplicate values is the most natural interpretation of 'find duplicates'.",
+        "alternatives": ["dict of {element: count}", "list of indices where duplicates occur", "Counter object"],
+        "code_refs": [{"file": "<generated>", "start_line": 7, "end_line": 7, "ast_node": "return_statement"}]
+      },
+      {
+        "id": "A2",
+        "category": "T2",
+        "description": "Each duplicate element appears exactly once in the result, even if it occurs 3+ times.",
+        "rationale": "Deduplication of the result is the conventional expectation.",
+        "alternatives": ["include element once per additional occurrence", "include with full multiplicity"],
+        "code_refs": [{"file": "<generated>", "start_line": 5, "end_line": 5, "ast_node": "if_statement"}]
+      },
+      {
+        "id": "A3",
+        "category": "T3",
+        "description": "Returns an empty list [] when no duplicates exist.",
+        "rationale": "Empty list is an idiomatic Python sentinel for an empty result set.",
+        "alternatives": ["return None", "raise ValueError('No duplicates found')"],
+        "code_refs": [{"file": "<generated>", "start_line": 2, "end_line": 2, "ast_node": "assignment"}]
+      },
+      {
+        "id": "A4",
+        "category": "T5",
+        "description": "Uses O(n) time and O(n) space via a set for seen tracking.",
+        "rationale": "Set lookup is O(1); this is the optimal solution for unsorted input.",
+        "alternatives": ["sort first then scan O(n log n) O(1) space", "nested loop O(n^2) O(1) space"],
+        "code_refs": [{"file": "<generated>", "start_line": 2, "end_line": 6, "ast_node": "for_statement"}]
+      }
+    ]
+  },
+  {
+    "id": "mini_008",
+    "source": "novel",
+    "prompt": "Parse a configuration file and return the settings as a dictionary.",
+    "code": "import configparser\n\ndef parse_config(filepath):\n    config = configparser.ConfigParser()\n    config.read(filepath)\n    result = {}\n    for section in config.sections():\n        for key, value in config[section].items():\n            result[f'{section}.{key}'] = value\n    return result\n",
+    "annotation_status": "done",
+    "ground_truth_assumptions": [
+      {
+        "id": "A1",
+        "category": "T1",
+        "description": "Assumes INI format; does not support JSON, YAML, TOML, or other config formats.",
+        "rationale": "configparser is the stdlib solution for configuration; format not specified in prompt.",
+        "alternatives": ["json.load", "yaml.safe_load", "tomllib (Python 3.11+)", "dotenv"],
+        "code_refs": [{"file": "<generated>", "start_line": 4, "end_line": 4, "ast_node": "call"}]
+      },
+      {
+        "id": "A2",
+        "category": "T2",
+        "description": "Returns a flat dict with 'section.key' compound keys rather than a nested dict or Section objects.",
+        "rationale": "Flat dict is easier to query without knowing section structure.",
+        "alternatives": ["nested dict {section: {key: value}}", "return configparser.ConfigParser object directly"],
+        "code_refs": [{"file": "<generated>", "start_line": 5, "end_line": 9, "ast_node": "for_statement"}]
+      },
+      {
+        "id": "A3",
+        "category": "T3",
+        "description": "Silently returns an empty dict if the file does not exist (configparser.read ignores missing files).",
+        "rationale": "configparser.read does not raise on missing files; caller must detect empty result.",
+        "alternatives": ["raise FileNotFoundError if file not found", "use configparser.read_file which raises"],
+        "code_refs": [{"file": "<generated>", "start_line": 5, "end_line": 5, "ast_node": "call"}]
+      },
+      {
+        "id": "A4",
+        "category": "T2",
+        "description": "All values are returned as strings; no type coercion is performed.",
+        "rationale": "configparser stores all values as strings by default.",
+        "alternatives": ["parse integers/booleans via configparser.getint/getboolean", "JSON-decode values", "use TypedDict with coercion"],
+        "code_refs": [{"file": "<generated>", "start_line": 8, "end_line": 8, "ast_node": "assignment"}]
+      }
+    ]
+  },
+  {
+    "id": "mini_009",
+    "source": "novel",
+    "prompt": "Implement a rate limiter that allows at most N requests per time window.",
+    "code": "import time\nfrom collections import deque\n\nclass RateLimiter:\n    def __init__(self, max_requests, window_seconds):\n        self.max_requests = max_requests\n        self.window = window_seconds\n        self.timestamps = deque()\n\n    def allow(self):\n        now = time.time()\n        while self.timestamps and now - self.timestamps[0] >= self.window:\n            self.timestamps.popleft()\n        if len(self.timestamps) < self.max_requests:\n            self.timestamps.append(now)\n            return True\n        return False\n",
+    "annotation_status": "done",
+    "ground_truth_assumptions": [
+      {
+        "id": "A1",
+        "category": "T5",
+        "description": "Uses a sliding window (timestamp log) algorithm rather than token bucket or fixed window counter.",
+        "rationale": "Sliding window is accurate and avoids boundary burst issues of fixed windows.",
+        "alternatives": ["token bucket algorithm", "fixed window counter (reset every N seconds)", "leaky bucket"],
+        "code_refs": [{"file": "<generated>", "start_line": 11, "end_line": 15, "ast_node": "function_definition"}]
+      },
+      {
+        "id": "A2",
+        "category": "T4",
+        "description": "State is stored in-memory per instance; not shared across processes or persistent across restarts.",
+        "rationale": "In-memory is simplest; distributed rate limiting not implied by prompt.",
+        "alternatives": ["Redis-backed shared state", "database-backed counter", "atomic counter in shared memory"],
+        "code_refs": [{"file": "<generated>", "start_line": 8, "end_line": 8, "ast_node": "assignment"}]
+      },
+      {
+        "id": "A3",
+        "category": "T2",
+        "description": "Returns boolean True/False to indicate allowed/denied; does not return retry-after duration.",
+        "rationale": "Boolean is the minimal contract; retry-after is an HTTP-level concern.",
+        "alternatives": ["return (allowed, retry_after_seconds)", "raise RateLimitExceeded exception", "return remaining quota"],
+        "code_refs": [{"file": "<generated>", "start_line": 15, "end_line": 17, "ast_node": "return_statement"}]
+      },
+      {
+        "id": "A4",
+        "category": "T6",
+        "description": "No per-client or per-user isolation; a single RateLimiter instance applies globally.",
+        "rationale": "Per-client limiting requires caller to instantiate separate RateLimiter per client.",
+        "alternatives": ["dict keyed by client_id inside a single limiter", "middleware that extracts client identity"],
+        "code_refs": [{"file": "<generated>", "start_line": 4, "end_line": 16, "ast_node": "class_definition"}]
+      }
+    ]
+  },
+  {
+    "id": "mini_010",
+    "source": "novel",
+    "prompt": "Implement a function to log messages to a file with timestamps.",
+    "code": "import datetime\n\ndef log_message(message, filepath='app.log'):\n    timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')\n    with open(filepath, 'a', encoding='utf-8') as f:\n        f.write(f'[{timestamp}] {message}\\n')\n",
+    "annotation_status": "done",
+    "ground_truth_assumptions": [
+      {
+        "id": "A1",
+        "category": "T4",
+        "description": "Appends to a flat text file ('a' mode); no log rotation, size limits, or structured format.",
+        "rationale": "Simple append-mode file writing is the minimal interpretation of 'log to file'.",
+        "alternatives": ["logging module with RotatingFileHandler", "JSON-structured log lines", "syslog"],
+        "code_refs": [{"file": "<generated>", "start_line": 5, "end_line": 6, "ast_node": "with_statement"}]
+      },
+      {
+        "id": "A2",
+        "category": "T2",
+        "description": "Timestamp uses local system time (datetime.now()), not UTC.",
+        "rationale": "Local time is intuitive; UTC is better for distributed systems but not specified.",
+        "alternatives": ["datetime.utcnow()", "datetime.now(tz=timezone.utc)", "Unix epoch timestamp"],
+        "code_refs": [{"file": "<generated>", "start_line": 4, "end_line": 4, "ast_node": "call"}]
+      },
+      {
+        "id": "A3",
+        "category": "T3",
+        "description": "No error handling; raises IOError/PermissionError if the file cannot be opened or written.",
+        "rationale": "Caller is expected to handle filesystem exceptions; silent failure is worse.",
+        "alternatives": ["catch IOError and print to stderr", "raise custom LoggingError", "return success/failure boolean"],
+        "code_refs": [{"file": "<generated>", "start_line": 5, "end_line": 5, "ast_node": "call"}]
+      },
+      {
+        "id": "A4",
+        "category": "T2",
+        "description": "No severity levels (DEBUG, INFO, WARNING, ERROR); all messages are treated identically.",
+        "rationale": "Severity levels add complexity not implied by 'log messages with timestamps'.",
+        "alternatives": ["level parameter: log_message(msg, level='INFO')", "separate functions per level", "Python logging module with level filtering"],
+        "code_refs": [{"file": "<generated>", "start_line": 3, "end_line": 6, "ast_node": "function_definition"}]
+      }
+    ]
+  }
+]

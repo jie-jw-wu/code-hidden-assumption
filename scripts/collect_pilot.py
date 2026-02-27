@@ -161,6 +161,8 @@ def main() -> None:
     if args.backend:
         import os
         os.environ["ASSUMPTION_MINER_BACKEND"] = args.backend
+        # generator._BACKEND is evaluated at import time, so patch it directly.
+        generator._BACKEND = args.backend
 
     prompts = PROMPTS if args.limit is None else PROMPTS[: args.limit]
     out_path = Path(args.out)

@@ -1,6 +1,6 @@
 [build-system]
 requires = ["setuptools>=68", "wheel"]
-build-backend = "setuptools.backends.legacy:build"
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "assumption-miner"
@@ -8,6 +8,9 @@ version = "0.1.0"
 description = "AssumptionMiner: Extracting and updating implicit requirements in LLM code generation."
 requires-python = ">=3.10"
 dependencies = []   # LLM SDKs are optional; install as needed
+
+[tool.setuptools.packages.find]
+include = ["assumption_miner*"]
 
 [project.optional-dependencies]
 openai     = ["openai>=1.0"]

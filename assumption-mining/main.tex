@@ -135,8 +135,9 @@ code updates; and
 (3)~\benchname, a benchmark for evaluating hidden assumption extraction under
 ambiguous and underspecified prompts, including metrics for assumption quality,
 consistency, and code adaptability.
-Empirical evaluation demonstrates that explicitly modeling hidden assumptions improves
-code correctness under ambiguity, enhances user control, and reduces downstream rework.
+We evaluate \sysname on \benchname across four dimensions: assumption extraction
+quality, assumption-to-code dependency accuracy, code adaptability after assumption
+revision, and developer experience in a controlled user study.
 Our results suggest that making implicit reasoning explicit is a critical step toward
 trustworthy, interactive LLM-based software engineering.
 \end{abstract}
@@ -237,7 +238,8 @@ preserving all unaffected components.
         synthesis, producing code and a formalized assumption layer in a single augmented
         generation step, making implicit LLM reasoning explicit and inspectable.
   \item \textbf{Assumption--code dependency mechanism} (\S\ref{sec:dependency},
-        \S\ref{sec:regeneration}): an AST-grounded dependency graph linking each
+        \S\ref{sec:regeneration}): a two-pass dependency graph---first LLM-based
+        candidate identification, then AST-level refinement---linking each
         assumption to the code regions it governs, enabling traceable and controllable
         incremental code updates when assumptions are flipped or revised.
   \item \textbf{\benchname benchmark} (\S\ref{sec:benchmark}): \NumBenchmarkTasks
@@ -483,7 +485,7 @@ programmatic processing by C4 (dependency mapping) and C5 (incremental regenerat
     "ast_node":   "string"      // optional AST node type
   }],
   "confidence": "float",        // [0, 1] extraction confidence
-  "severity":   "low|medium|high"
+  "severity":   "low|medium|high"  // LLM-assigned; human may override
 }
 \end{lstlisting}
 \end{figure}
@@ -521,10 +523,14 @@ Edge construction proceeds in two passes:
 \begin{enumerate}[noitemsep]
   \item \textbf{LLM pass.}  The extraction prompt (\cref{lst:prompt}) requests
         natural-language descriptions of relevant code regions.  We parse these
-        with a simple token-overlap heuristic to identify candidate AST nodes.
+        with a token-overlap heuristic: we tokenize both the LLM's region
+        description and each code identifier, then retain AST nodes whose
+        identifier tokens share a Jaccard similarity $\geq 0.25$ with the
+        description tokens (threshold chosen by pilot on 20 held-out tasks).
   \item \textbf{AST refinement pass.}  We parse $c$ with the \code{tree-sitter}
-        library and perform a constrained search from the candidate nodes to
-        identify the minimal enclosing AST sub-tree for each assumption.
+        library and perform a bottom-up traversal from each candidate leaf node,
+        stopping at the deepest ancestor that encloses \emph{all} candidate
+        nodes for that assumption; this yields the minimal enclosing sub-tree.
 \end{enumerate}
 
 \subsection{Incremental Regeneration}
@@ -645,7 +651,13 @@ $\mathcal{A}^*(p,c)$:
   \item[\AP (Assumption Precision):] $|\mathcal{A} \cap \mathcal{A}^*| \;/\; |\mathcal{A}|$
   \item[\AFone (Assumption $F_1$):] Harmonic mean of \AR and \AP
   \item[\AS (Assumption Specificity):] Mean BLEU-4 score of generated descriptions
-       against reference descriptions for matched assumptions
+       against reference descriptions for matched assumptions.
+       We adopt BLEU-4 as a lexical-overlap proxy: assumption descriptions are
+       short, factual sentences (``passwords stored as MD5 hashes'') where
+       n-gram precision captures whether the key constraint tokens appear, unlike
+       open-ended fluency tasks where BLEU is less appropriate.
+       We acknowledge this does not capture paraphrastic equivalence; semantic
+       similarity scores (e.g., BERTScore) are a planned extension.
   \item[\CAS (Category-Adjusted Specificity):] \AS weighted by inverse category
        frequency (penalizes easy categories)
 \end{description}
@@ -681,7 +693,8 @@ LLM interface?
 
 \textbf{Backbone LLM.}  We use GPT-4o (\code{gpt-4o-2024-05-13}) for all
 \sysname components unless otherwise stated.  Ablations with Claude~3.5~Sonnet
-and Gemini~1.5~Pro are reported in \cref{tab:rq1main}.
+(\code{claude-3-5-sonnet-20241022}) and Gemini~1.5~Pro (\code{gemini-1.5-pro-002})
+are reported in \cref{tab:rq1main}.
 
 \textbf{Baselines.}
 \begin{itemize}[noitemsep]
@@ -859,7 +872,9 @@ correcting at least one assumption.
 
 \textbf{Measures.}  \emph{Task completion time} (minutes), \emph{assumption
 coverage} (fraction of ground-truth assumptions correctly identified and acted
-upon), and \emph{SUS score}~\cite{brooke1996sus} (system usability scale, 0–100).
+upon, where ``acted upon'' means the participant explicitly accepted, rejected,
+or edited the corresponding assumption card before submitting their solution),
+and \emph{SUS score}~\cite{brooke1996sus} (system usability scale, 0–100).
 
 \begin{figure}[t]
   \centering
@@ -870,8 +885,8 @@ upon), and \emph{SUS score}~\cite{brooke1996sus} (system usability scale, 0–10
     Significance annotation bars (Wilcoxon, $p < 0.05$).}
     \vspace{3.5cm}
   }}
-  \caption{RQ4 user study results. \sysname significantly reduces task-completion
-           time (left) and improves SUS scores (right).
+  \caption{RQ4 user study results. Task-completion time in minutes (left) and
+           SUS usability scores (right) for Baseline vs.\ \sysname.
            Boxes show IQR; whiskers show 1.5$\times$IQR; $\ast p<0.05$,
            $\ast\ast p<0.01$.}
   \label{fig:userstudy}
@@ -959,10 +974,36 @@ exploration and oracle generation.
 Unlike \sysname, all of these techniques operate \emph{post-hoc} on existing
 code: they cannot attribute discovered properties to specific prompt ambiguities,
 nor do they surface assumptions \emph{during} generation for developer review.
-\sysname is complementary—its structured assumption layer could \emph{seed}
+\sysname is complementary---its structured assumption layer could \emph{seed}
 downstream invariant checkers with candidate properties, but its primary goal
 is interactive disambiguation at generation time rather than post-hoc property
 discovery.
+
+\subsection{Architectural Decision Records}
+Architectural Decision Records (ADRs)~\cite{jansen2005adr,capilla2016adr}
+are lightweight documents that capture the rationale behind a design decision,
+its alternatives, and its consequences.
+The AssumptionRecord schema in \sysname is directly inspired by this tradition:
+both treat design decisions as first-class, addressable artifacts with explicit
+alternatives.
+The key distinction is automation: ADRs are authored manually by architects
+after the fact, whereas \sysname \emph{generates} assumption records
+automatically during code synthesis, making the practice tractable for the
+routine, fine-grained decisions embedded in everyday LLM code generation.
+
+\subsection{Automated Program Repair}
+Automated Program Repair (APR) techniques~\cite{yuan2022avatar,chen2018sequencer,ye2022rewardrepair}
+generate patches that correct program failures, typically guided by failing
+tests or formal specifications.
+The incremental regeneration component of \sysname (C5) shares structural
+similarities with patch generation: both isolate a minimal code region and
+apply a targeted transformation.
+However, APR is \emph{fault-driven}---triggered by observable failures---while
+\sysname's regeneration is \emph{assumption-driven}, triggered by developer
+preference changes on code that may already pass all tests (the working-but-wrong
+regime that APR cannot address).
+This makes C5 closer in spirit to requirement-driven change propagation than
+to defect localization and repair.
 
 % ============================================================
 \section{Threats to Validity}
@@ -977,6 +1018,25 @@ students aware of the study goals.  We mitigated this with calibration rounds an
 senior-author adjudication.
 LLM non-determinism (temperature~$>$~0) means reported numbers reflect averaged
 runs; we report means over \todonumber{X} runs per task.
+
+\emph{LLM backbone bias.}
+The assumption taxonomy and \benchname annotations were developed while using
+GPT-4o, and \sysname's extractor is also GPT-4o-based; evaluation on GPT-4o
+outputs thus carries a risk of circular self-consistency rather than true
+generalization.
+We partially mitigate this by (i) using held-out tasks not seen during taxonomy
+development, and (ii) reporting ablations with Claude~3.5~Sonnet and
+Gemini~1.5~Pro (see \cref{tab:rq1main}), but full independence would require
+a backbone-agnostic benchmark constructed without any LLM assistance.
+
+\emph{Benchmark contamination.}
+HumanEval~\cite{chen2021codex} and MBPP~\cite{austin2021mbpp} tasks are part
+of GPT-4o's training data; the model may therefore generate predictable,
+stereotyped solutions whose assumptions are easier to extract, potentially
+inflating extraction accuracy relative to novel tasks.
+The \todonumber{X} novel tasks in \benchname are designed to be out-of-distribution
+for this reason, and we report per-source breakdowns to allow readers to assess
+this effect.
 
 \textbf{External validity.}
 \benchname tasks are drawn from Python; results may not generalize to statically
@@ -994,6 +1054,12 @@ correlates with but does not equal actual productivity gains.
 The user study sample (\NumParticipants participants) is sufficient for detecting
 medium-to-large effect sizes ($d \geq 0.5$, power~$\geq 0.8$) but may be
 under-powered for small effects.
+Although task order was counterbalanced across participants, within-subjects
+designs carry learning-effect risks: participants who encounter \sysname second
+may perform better on the Baseline condition due to improved familiarity with
+the task type itself, not the tool.
+We analyze order as a covariate in our statistical models to detect and control
+for this confound.
 
 % ============================================================
 \section{Conclusion}
