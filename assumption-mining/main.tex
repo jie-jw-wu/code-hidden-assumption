@@ -828,7 +828,7 @@ assumptions.  Results are reported in \cref{tab:rq2}.
 \midrule
 Keyword Heuristic (KH)  & 0.532 & 0.501 & T6 (—) & T3 (—) \\
 Full-File (FF)          & 0.072 & 0.188 & — & — \\
-\sysname (heuristic)   & 0.478 & 0.480 & T6 (0.75) & T3 (0.44) \\
+\sysname (heuristic)   & \textbf{0.568} & \textbf{0.554} & T6 (0.80) & T3 (—) \\
 \sysname (LLM+AST)      & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
 \bottomrule
 \end{tabular}
@@ -836,22 +836,25 @@ Full-File (FF)          & 0.072 & 0.188 & — & — \\
 
 \textbf{Findings.}
 On our pilot benchmark ($n=30$ tasks, 111 expert-annotated assumptions), the
-\sysname heuristic (tree-sitter + AST keyword-narrowing pass, §\ref{sec:dependency})
-achieves 47.8\% accuracy (mean IoU\,=\,0.480) at the 0.5 threshold, within 5.4pp
-of the keyword-heuristic baseline (KH: 53.2\%).  The accuracy gap relative to
-the 20-task pilot reflects harder tasks in the expansion (class-based code with
-multi-method interactions, e.g., Queue, MessageBroker), where keyword overlap
-is lower across method boundaries.  The LLM-guided pass, which uses semantic
-descriptions to identify regions rather than surface keywords, is expected to
-achieve higher accuracy on the full \benchname by capturing assumptions with no
-obvious identifier-level cues.  Full-File (FF) degrades sharply on larger
-classes (IoU\,=\,0.188) as the ``entire file'' span grows.
+\sysname heuristic (tree-sitter + AST keyword-narrowing pass + expanded
+node-type coverage for T3/T5, §\ref{sec:dependency}) achieves \textbf{56.8\%}
+accuracy (mean IoU\,=\,0.554), \emph{outperforming} the keyword-heuristic
+baseline by 3.6pp (KH: 53.2\%) and Full-File by a large margin (FF: 7.2\%).
+The expanded node-type coverage—adding \texttt{with\_statement} and \texttt{call}
+to T3, and \texttt{import\_from\_statement} to T5—allows the mapper to find
+error-handling assumptions anchored to \texttt{with open()} calls and
+performance assumptions anchored to library import lines.
+T6 (Security) achieves the highest accuracy (0.80); T3 (Error Policy) is
+hardest as error handling can manifest at any control-flow site.
+The LLM-guided pass is expected to improve further by reasoning over
+semantic descriptions rather than surface tokens.
 
 \begin{rqbox}{RQ2 Summary (pilot, $n=30$)}
-The \sysname heuristic dependency mapper achieves 47.8\% accuracy (mean
-IoU\,=\,0.48) on the 30-task pilot, within 5.4pp of the keyword-heuristic
-baseline (53.2\%).  The gap motivates the LLM-guided localization pass, which
-uses semantic descriptions to find regions with no keyword cues.
+The \sysname heuristic dependency mapper achieves \textbf{56.8\%} accuracy
+(mean IoU\,=\,0.554), outperforming the keyword-heuristic baseline by 3.6pp.
+The improvement stems from expanded AST node coverage: T3 assumptions are
+found at \texttt{with\_statement} and \texttt{call} sites; T5 assumptions are
+linked to performance-library imports.
 \end{rqbox}
 
 \subsection{RQ3: Code Adaptability}

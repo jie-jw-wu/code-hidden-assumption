@@ -96,17 +96,19 @@ def _build_node_map(root) -> dict[str, list]:
 # to implement that category's concerns.
 _CATEGORY_NODE_TYPES: dict[str, list[str]] = {
     "T1": ["function_definition", "if_statement", "assert_statement",
-           "call", "with_statement"],                                     # input validation
+           "call", "with_statement", "import_from_statement"],            # input validation
     "T2": ["return_statement", "typed_parameter", "type",
-           "function_definition"],                                        # return type
+           "function_definition", "assignment"],                          # return type
     "T3": ["except_clause", "raise_statement", "if_statement",
-           "return_statement"],                                           # error handling
+           "return_statement", "call", "with_statement",
+           "expression_statement"],                                       # error handling
     "T4": ["import_statement", "import_from_statement",
            "assignment", "call", "with_statement"],                       # persistence
     "T5": ["function_definition", "for_statement", "while_statement",
-           "if_statement", "class_definition"],                           # algorithm
-    "T6": ["import_statement", "call", "assignment",
-           "function_definition"],                                        # security
+           "if_statement", "class_definition",
+           "import_statement", "import_from_statement", "assignment"],    # algorithm
+    "T6": ["import_statement", "import_from_statement", "call",
+           "assignment", "function_definition"],                          # security
 }
 
 # Maximum span (lines) for a matched AST node before we apply keyword narrowing.

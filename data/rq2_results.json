@@ -2,9 +2,9 @@
   "overall": {
     "am": {
       "n_evaluated": 111,
-      "n_correct": 53,
-      "accuracy": 0.4775,
-      "mean_iou": 0.4804,
+      "n_correct": 63,
+      "accuracy": 0.5676,
+      "mean_iou": 0.5537,
       "threshold": 0.5
     },
     "kh": {
@@ -31,13 +31,13 @@
       },
       "T2": {
         "n": 30,
-        "mean_iou": 0.5212,
-        "accuracy": 0.5
+        "mean_iou": 0.5434,
+        "accuracy": 0.5333
       },
       "T3": {
         "n": 24,
-        "mean_iou": 0.3764,
-        "accuracy": 0.375
+        "mean_iou": 0.5986,
+        "accuracy": 0.625
       },
       "T4": {
         "n": 9,
@@ -46,8 +46,8 @@
       },
       "T5": {
         "n": 24,
-        "mean_iou": 0.4002,
-        "accuracy": 0.4167
+        "mean_iou": 0.4891,
+        "accuracy": 0.5417
       },
       "T6": {
         "n": 5,
@@ -225,7 +225,7 @@
       "assumption_id": "A3",
       "category": "T3",
       "n_gt_refs": 1,
-      "am_iou": 0.0,
+      "am_iou": 1.0,
       "kh_iou": 1.0,
       "ff_iou": 0.1667
     },
@@ -387,7 +387,7 @@
       "assumption_id": "A3",
       "category": "T3",
       "n_gt_refs": 1,
-      "am_iou": 0.0,
+      "am_iou": 1.0,
       "kh_iou": 1.0,
       "ff_iou": 0.1
     },
@@ -450,7 +450,7 @@
       "assumption_id": "A2",
       "category": "T2",
       "n_gt_refs": 1,
-      "am_iou": 0.3333,
+      "am_iou": 1.0,
       "kh_iou": 1.0,
       "ff_iou": 0.1667
     },
@@ -459,7 +459,7 @@
       "assumption_id": "A3",
       "category": "T3",
       "n_gt_refs": 1,
-      "am_iou": 0.0,
+      "am_iou": 1.0,
       "kh_iou": 1.0,
       "ff_iou": 0.1667
     },
@@ -621,7 +621,7 @@
       "assumption_id": "A4",
       "category": "T5",
       "n_gt_refs": 1,
-      "am_iou": 0.2,
+      "am_iou": 1.0,
       "kh_iou": 1.0,
       "ff_iou": 0.1111
     },
@@ -693,7 +693,7 @@
       "assumption_id": "A1",
       "category": "T3",
       "n_gt_refs": 1,
-      "am_iou": 0.0,
+      "am_iou": 0.3333,
       "kh_iou": 0.3333,
       "ff_iou": 0.1875
     },
@@ -774,7 +774,7 @@
       "assumption_id": "A3",
       "category": "T3",
       "n_gt_refs": 1,
-      "am_iou": 0.0,
+      "am_iou": 0.5,
       "kh_iou": 1.0,
       "ff_iou": 0.2
     },
@@ -945,7 +945,7 @@
       "assumption_id": "A3",
       "category": "T3",
       "n_gt_refs": 1,
-      "am_iou": 0.0,
+      "am_iou": 0.5,
       "kh_iou": 0.5,
       "ff_iou": 0.0909
     },
@@ -999,7 +999,7 @@
       "assumption_id": "A1",
       "category": "T3",
       "n_gt_refs": 1,
-      "am_iou": 0.0,
+      "am_iou": 1.0,
       "kh_iou": 1.0,
       "ff_iou": 0.1429
     },
@@ -1026,7 +1026,7 @@
       "assumption_id": "A1",
       "category": "T5",
       "n_gt_refs": 1,
-      "am_iou": 0.3333,
+      "am_iou": 1.0,
       "kh_iou": 1.0,
       "ff_iou": 0.0833
     },
@@ -1080,7 +1080,7 @@
       "assumption_id": "A4",
       "category": "T5",
       "n_gt_refs": 1,
-      "am_iou": 0.3333,
+      "am_iou": 1.0,
       "kh_iou": 1.0,
       "ff_iou": 0.0455
     },
