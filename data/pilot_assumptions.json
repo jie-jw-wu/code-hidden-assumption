@@ -526,5 +526,479 @@
         "code_refs": []
       }
     ]
+  },
+  {
+    "sample_id": "mini_011",
+    "prompt": "Implement a stack data structure with push, pop, and peek operations.",
+    "code": "class Stack:\n    def __init__(self):\n        self._items = []\n\n    def push(self, item):\n        self._items.append(item)\n\n    def pop(self):\n        if not self._items:\n            raise IndexError('pop from empty stack')\n        return self._items.pop()\n\n    def peek(self):\n        if not self._items:\n            raise IndexError('peek at empty stack')\n        return self._items[-1]\n\n    def is_empty(self):\n        return len(self._items) == 0\n",
+    "assumptions": [
+      {
+        "id": "A1",
+        "category": "T4",
+        "description": "Backed by a Python list (in-memory, not persistent).",
+        "rationale": "List is the canonical Python dynamic array; no persistence implied.",
+        "alternatives": [
+          "deque for O(1) pops",
+          "linked list",
+          "array module"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A2",
+        "category": "T3",
+        "description": "Raises IndexError on pop/peek of empty stack rather than returning None or a sentinel.",
+        "rationale": "IndexError mirrors the built-in list behaviour.",
+        "alternatives": [
+          "return None",
+          "raise ValueError",
+          "return a sentinel object"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A3",
+        "category": "T2",
+        "description": "No size limit; the stack grows unbounded until memory is exhausted.",
+        "rationale": "Unlimited capacity is the simplest interpretation of 'stack'.",
+        "alternatives": [
+          "bounded stack with max_size parameter",
+          "raise OverflowError when full"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A4",
+        "category": "T2",
+        "description": "Provides is_empty() but no __len__ or __bool__ methods.",
+        "rationale": "is_empty() is an explicit, readable API; __len__ adds complexity.",
+        "alternatives": [
+          "implement __len__",
+          "implement __bool__",
+          "both"
+        ],
+        "code_refs": []
+      }
+    ]
+  },
+  {
+    "sample_id": "mini_012",
+    "prompt": "Validate whether a given string is a valid email address.",
+    "code": "import re\n\nEMAIL_RE = re.compile(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$')\n\ndef is_valid_email(email):\n    if not isinstance(email, str):\n        return False\n    return bool(EMAIL_RE.match(email.strip()))\n",
+    "assumptions": [
+      {
+        "id": "A1",
+        "category": "T1",
+        "description": "Uses a simplified regex; does not validate per RFC 5321/5322 (e.g., quoted local parts, IP literals, comments).",
+        "rationale": "Simple regex covers 99% of practical email formats without RFC complexity.",
+        "alternatives": [
+          "email-validator library",
+          "full RFC 5321 regex",
+          "DNS MX lookup"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A2",
+        "category": "T3",
+        "description": "Returns False for non-string input instead of raising TypeError.",
+        "rationale": "Boolean return is safer than raising in validation functions.",
+        "alternatives": [
+          "raise TypeError for non-string input",
+          "coerce to str first"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A3",
+        "category": "T1",
+        "description": "Strips leading/trailing whitespace before matching.",
+        "rationale": "Whitespace is a common copy-paste artifact; stripping avoids false negatives.",
+        "alternatives": [
+          "no stripping (strict)",
+          "raise ValueError on leading/trailing space"
+        ],
+        "code_refs": []
+      }
+    ]
+  },
+  {
+    "sample_id": "mini_013",
+    "prompt": "Merge two sorted lists into a single sorted list.",
+    "code": "def merge_sorted(a, b):\n    result = []\n    i = j = 0\n    while i < len(a) and j < len(b):\n        if a[i] <= b[j]:\n            result.append(a[i])\n            i += 1\n        else:\n            result.append(b[j])\n            j += 1\n    result.extend(a[i:])\n    result.extend(b[j:])\n    return result\n",
+    "assumptions": [
+      {
+        "id": "A1",
+        "category": "T5",
+        "description": "Uses an O(n+m) two-pointer merge rather than concatenate-and-sort O((n+m) log(n+m)).",
+        "rationale": "Two-pointer is optimal for already-sorted inputs.",
+        "alternatives": [
+          "sorted(a + b)",
+          "heapq.merge"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A2",
+        "category": "T2",
+        "description": "Returns a new list; does not merge in-place.",
+        "rationale": "Returning a new list avoids mutating inputs.",
+        "alternatives": [
+          "in-place merge into a",
+          "return a generator"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A3",
+        "category": "T3",
+        "description": "Stable merge: equal elements from list a precede those from list b (a[i] <= b[j]).",
+        "rationale": "Stable merge is conventional and preserves relative order.",
+        "alternatives": [
+          "non-stable (a[i] < b[j])",
+          "arbitrary order for equal elements"
+        ],
+        "code_refs": []
+      }
+    ]
+  },
+  {
+    "sample_id": "mini_014",
+    "prompt": "Write a function to check whether a string is a palindrome.",
+    "code": "def is_palindrome(s):\n    s = s.lower().replace(' ', '')\n    return s == s[::-1]\n",
+    "assumptions": [
+      {
+        "id": "A1",
+        "category": "T1",
+        "description": "Case-insensitive comparison (lowercased before checking).",
+        "rationale": "Case-insensitive is the most common interpretation of 'palindrome'.",
+        "alternatives": [
+          "case-sensitive",
+          "locale-aware case folding"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A2",
+        "category": "T1",
+        "description": "Ignores spaces but preserves all other punctuation.",
+        "rationale": "Spaces are the most obvious separator; full punctuation stripping is more complex.",
+        "alternatives": [
+          "strip all non-alphanumeric characters",
+          "no normalization at all"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A3",
+        "category": "T5",
+        "description": "Uses slice reversal O(n) space; does not use O(1) two-pointer comparison.",
+        "rationale": "Slice reversal is idiomatic Python; two-pointer adds complexity for no benefit in Python.",
+        "alternatives": [
+          "two-pointer comparison O(1) space",
+          "recursive approach"
+        ],
+        "code_refs": []
+      }
+    ]
+  },
+  {
+    "sample_id": "mini_015",
+    "prompt": "Connect to a database and retrieve all users from the users table.",
+    "code": "import sqlite3\n\ndef get_all_users(db_path='database.db'):\n    conn = sqlite3.connect(db_path)\n    cursor = conn.cursor()\n    cursor.execute('SELECT * FROM users')\n    rows = cursor.fetchall()\n    conn.close()\n    return rows\n",
+    "assumptions": [
+      {
+        "id": "A1",
+        "category": "T4",
+        "description": "Uses SQLite as the database backend.",
+        "rationale": "SQLite is the stdlib database requiring no server setup.",
+        "alternatives": [
+          "PostgreSQL via psycopg2",
+          "MySQL via pymysql",
+          "MongoDB via pymongo"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A2",
+        "category": "T2",
+        "description": "Returns a list of raw tuples rather than dicts or ORM objects.",
+        "rationale": "fetchall() returns tuples by default; no column name mapping.",
+        "alternatives": [
+          "use row_factory=sqlite3.Row for dict-like access",
+          "ORM model objects",
+          "list of dicts via cursor.description"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A3",
+        "category": "T3",
+        "description": "No error handling; raises OperationalError if the database or table does not exist.",
+        "rationale": "Caller expected to handle DB errors.",
+        "alternatives": [
+          "try/except returning empty list",
+          "raise custom DatabaseError",
+          "return None on failure"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A4",
+        "category": "T5",
+        "description": "Fetches all rows into memory at once (fetchall) instead of using a cursor iterator.",
+        "rationale": "fetchall() is simpler; streaming is unnecessary for small tables.",
+        "alternatives": [
+          "yield rows via fetchone() in a loop",
+          "fetchmany(batch_size)"
+        ],
+        "code_refs": []
+      }
+    ]
+  },
+  {
+    "sample_id": "mini_016",
+    "prompt": "Implement a function that retries a failing operation up to N times.",
+    "code": "import time\n\ndef retry(func, max_attempts=3, delay=1.0):\n    for attempt in range(max_attempts):\n        try:\n            return func()\n        except Exception as e:\n            if attempt == max_attempts - 1:\n                raise\n            time.sleep(delay)\n",
+    "assumptions": [
+      {
+        "id": "A1",
+        "category": "T3",
+        "description": "Catches all Exception subclasses; does not distinguish retriable vs non-retriable errors.",
+        "rationale": "Catching all exceptions is the simplest retry implementation.",
+        "alternatives": [
+          "only catch specific exceptions passed as parameter",
+          "exclude KeyboardInterrupt/SystemExit",
+          "configurable exception filter"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A2",
+        "category": "T5",
+        "description": "Uses fixed delay between retries, not exponential backoff.",
+        "rationale": "Fixed delay is simpler; exponential backoff reduces thundering herd.",
+        "alternatives": [
+          "exponential backoff: delay * 2^attempt",
+          "jitter: random delay in [0, delay]",
+          "no delay"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A3",
+        "category": "T2",
+        "description": "On final failure, re-raises the last exception rather than returning None or a Result type.",
+        "rationale": "Re-raising preserves the original stack trace.",
+        "alternatives": [
+          "return None after exhausting retries",
+          "return (result, error) tuple",
+          "return Optional"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A4",
+        "category": "T5",
+        "description": "Accepts a zero-argument callable; does not support passing arguments to func.",
+        "rationale": "Callers can use functools.partial or lambda; keeping func() simple.",
+        "alternatives": [
+          "retry(func, *args, **kwargs)",
+          "accept a callable class with __call__"
+        ],
+        "code_refs": []
+      }
+    ]
+  },
+  {
+    "sample_id": "mini_017",
+    "prompt": "Generate a random password of a given length.",
+    "code": "import random\nimport string\n\ndef generate_password(length=12):\n    chars = string.ascii_letters + string.digits + string.punctuation\n    return ''.join(random.choice(chars) for _ in range(length))\n",
+    "assumptions": [
+      {
+        "id": "A1",
+        "category": "T6",
+        "description": "Uses random.choice (not cryptographically secure) instead of secrets module.",
+        "rationale": "random is simpler; cryptographic quality not stated in prompt.",
+        "alternatives": [
+          "secrets.choice for cryptographic security",
+          "os.urandom"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A2",
+        "category": "T1",
+        "description": "Character set includes all printable ASCII punctuation (33 chars), not a restricted safe subset.",
+        "rationale": "Full punctuation maximises entropy; some systems reject certain characters.",
+        "alternatives": [
+          "only alphanumeric",
+          "exclude ambiguous chars (0, O, l, 1)",
+          "configurable charset"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A3",
+        "category": "T3",
+        "description": "Does not enforce character class requirements (e.g., at least one digit, one uppercase).",
+        "rationale": "Requirements not stated; caller can validate.",
+        "alternatives": [
+          "guarantee at least one char from each class",
+          "accept policy parameter"
+        ],
+        "code_refs": []
+      }
+    ]
+  },
+  {
+    "sample_id": "mini_018",
+    "prompt": "Implement a simple event system where handlers can be registered and triggered.",
+    "code": "class EventEmitter:\n    def __init__(self):\n        self._handlers = {}\n\n    def on(self, event, handler):\n        self._handlers.setdefault(event, []).append(handler)\n\n    def off(self, event, handler):\n        if event in self._handlers:\n            self._handlers[event] = [\n                h for h in self._handlers[event] if h is not handler\n            ]\n\n    def emit(self, event, *args, **kwargs):\n        for handler in list(self._handlers.get(event, [])):\n            handler(*args, **kwargs)\n",
+    "assumptions": [
+      {
+        "id": "A1",
+        "category": "T3",
+        "description": "Exceptions raised inside handlers propagate to the caller of emit() and stop subsequent handlers.",
+        "rationale": "Letting exceptions propagate is the simplest and most transparent behaviour.",
+        "alternatives": [
+          "catch handler exceptions and continue to next",
+          "log and swallow handler exceptions",
+          "collect all exceptions and raise after all handlers run"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A2",
+        "category": "T5",
+        "description": "Handlers are called synchronously in registration order; no async or threading support.",
+        "rationale": "Synchronous execution is the default; async adds significant complexity.",
+        "alternatives": [
+          "asyncio event loop",
+          "thread-per-handler",
+          "concurrent.futures executor"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A3",
+        "category": "T4",
+        "description": "Event registry is in-memory and not shared between instances.",
+        "rationale": "Instance-level registry is standard; global/shared requires additional design.",
+        "alternatives": [
+          "class-level (shared) registry",
+          "persistence to Redis pub/sub"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A4",
+        "category": "T2",
+        "description": "emit() passes *args, **kwargs to handlers but returns None (discards handler return values).",
+        "rationale": "Typical event emitters do not use handler return values.",
+        "alternatives": [
+          "collect and return list of return values",
+          "short-circuit on False return (cancellable events)"
+        ],
+        "code_refs": []
+      }
+    ]
+  },
+  {
+    "sample_id": "mini_019",
+    "prompt": "Write a function to flatten a nested list into a flat list.",
+    "code": "def flatten(lst):\n    result = []\n    for item in lst:\n        if isinstance(item, list):\n            result.extend(flatten(item))\n        else:\n            result.append(item)\n    return result\n",
+    "assumptions": [
+      {
+        "id": "A1",
+        "category": "T1",
+        "description": "Only flattens Python list instances, not other iterables (tuples, sets, generators).",
+        "rationale": "isinstance(item, list) is the minimal type check.",
+        "alternatives": [
+          "check for Iterable (excluding str)",
+          "check for Sequence",
+          "flatten any non-string iterable"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A2",
+        "category": "T5",
+        "description": "Recursively flattens to arbitrary depth; not limited to one level.",
+        "rationale": "'Flatten' conventionally means fully flat; one-level is a special case.",
+        "alternatives": [
+          "depth parameter",
+          "only one level deep",
+          "iterative with stack to avoid recursion limit"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A3",
+        "category": "T2",
+        "description": "Returns a new list; does not flatten in-place.",
+        "rationale": "Returning new list is functional and avoids side effects.",
+        "alternatives": [
+          "in-place flatten",
+          "return a generator (lazy)"
+        ],
+        "code_refs": []
+      }
+    ]
+  },
+  {
+    "sample_id": "mini_020",
+    "prompt": "Implement a function to send an HTTP GET request and return the response body.",
+    "code": "import urllib.request\n\ndef http_get(url, timeout=10):\n    with urllib.request.urlopen(url, timeout=timeout) as response:\n        return response.read().decode('utf-8')\n",
+    "assumptions": [
+      {
+        "id": "A1",
+        "category": "T6",
+        "description": "No SSL certificate verification configuration; uses system default (trusts system CA bundle).",
+        "rationale": "Default SSL behaviour is appropriate for most clients.",
+        "alternatives": [
+          "ssl.create_default_context() with custom CA",
+          "disable verification for testing (insecure)",
+          "pinned certificate"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A2",
+        "category": "T1",
+        "description": "Decodes response body as UTF-8; fails on non-UTF-8 encodings.",
+        "rationale": "UTF-8 is the most common web encoding; Content-Type header parsing adds complexity.",
+        "alternatives": [
+          "detect encoding from Content-Type header",
+          "decode with errors='replace'",
+          "return raw bytes"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A3",
+        "category": "T3",
+        "description": "No retry logic; raises urllib.error.URLError on network failures.",
+        "rationale": "Retry adds complexity; one-shot request is the simplest contract.",
+        "alternatives": [
+          "retry with backoff",
+          "return None on failure",
+          "raise custom NetworkError"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A4",
+        "category": "T2",
+        "description": "Returns the full response body as a string; does not expose headers, status code, or redirect info.",
+        "rationale": "Returning just the body is the most common use case.",
+        "alternatives": [
+          "return (status_code, headers, body) tuple",
+          "return a Response object",
+          "requests.Response-like interface"
+        ],
+        "code_refs": []
+      }
+    ]
   }
 ]

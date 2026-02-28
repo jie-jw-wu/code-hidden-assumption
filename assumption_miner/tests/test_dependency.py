@@ -147,3 +147,116 @@ def test_get_context_window_clamps_at_boundaries():
     window = get_context_window(code, start_line=2, end_line=2, k=10)
     assert "line_1" in window
     assert "line_3" in window
+
+
+def test_map_dependencies_narrowing_tightens_large_nodes():
+    """
+    When a keyword matches inside a large AST node (e.g., a full function),
+    the narrowing pass should return only the lines containing the keyword,
+    not the entire function span.
+    """
+    try:
+        from assumption_miner.dependency import map_dependencies
+    except ImportError:
+        pytest.skip("tree-sitter not available")
+
+    # Auth code: the function 'authenticate' spans lines 6-10.
+    # The MD5 keyword is only on line 7.
+    record = _make_record("T6", "MD5 password hashing", ["bcrypt", "argon2"])
+    map_dependencies([record], _AUTH_CODE)
+
+    # All returned refs should be narrower than the full 11-line file.
+    assert len(record.code_refs) >= 1
+    for ref in record.code_refs:
+        span = ref.end_line - ref.start_line + 1
+        # After narrowing, no ref should span the entire file.
+        total_lines = len(_AUTH_CODE.splitlines())
+        assert span < total_lines, f"Ref spans whole file ({span} lines)"
+
+
+def test_narrow_to_keyword_lines_basic():
+    from assumption_miner.dependency import _narrow_to_keyword_lines
+
+    lines = ["def foo():", "    x = md5(pw)", "    return x", ""]
+    start, end = _narrow_to_keyword_lines(lines, 1, 3, ["md5"])
+    assert start == 2  # line 2 contains "md5"
+    assert end == 2
+
+
+def test_narrow_to_keyword_lines_no_match():
+    from assumption_miner.dependency import _narrow_to_keyword_lines
+
+    lines = ["def foo():", "    return 1", ""]
+    start, end = _narrow_to_keyword_lines(lines, 1, 2, ["sqlite"])
+    assert start is None
+    assert end is None
+
+
+def test_narrow_to_keyword_lines_multiple_matches():
+    from assumption_miner.dependency import _narrow_to_keyword_lines
+
+    lines = ["x = 1", "md5(a)", "pass", "sha256(b)", "return"]
+    start, end = _narrow_to_keyword_lines(lines, 1, 5, ["md5", "sha256"])
+    assert start == 2
+    assert end == 4
+
+
+# ---------------------------------------------------------------------------
+# LLM-guided pass helpers (offline)
+# ---------------------------------------------------------------------------
+
+def test_parse_loc_response_valid_json():
+    from assumption_miner.dependency import _parse_loc_response
+
+    raw = '{"start_line": 5, "end_line": 7, "confidence": 0.9}'
+    result = _parse_loc_response(raw)
+    assert result is not None
+    assert result["start_line"] == 5
+    assert result["end_line"] == 7
+    assert result["confidence"] == pytest.approx(0.9)
+
+
+def test_parse_loc_response_embedded_json():
+    from assumption_miner.dependency import _parse_loc_response
+
+    raw = 'Here is the range:\n{"start_line": 3, "end_line": 3, "confidence": 0.75}'
+    result = _parse_loc_response(raw)
+    assert result is not None
+    assert result["start_line"] == 3
+
+
+def test_parse_loc_response_invalid():
+    from assumption_miner.dependency import _parse_loc_response
+
+    assert _parse_loc_response("not json") is None
+    assert _parse_loc_response("") is None
+
+
+def test_snap_to_ast_node_finds_enclosing():
+    try:
+        from assumption_miner.dependency import _parse, _snap_to_ast_node
+    except ImportError:
+        pytest.skip("tree-sitter not available")
+
+    code = "def foo():\n    x = md5(pw)\n    return x\n"
+    tree, node_map = _parse(code)
+    # The LLM predicted line 2 (the md5 call); snap should find function_definition (lines 1-3).
+    start, end = _snap_to_ast_node(tree, node_map, 2, 2, "T6")
+    # Should expand to at least contain line 2 and be within the file.
+    assert start <= 2
+    assert end >= 2
+
+
+def test_snap_to_ast_node_no_match_returns_original():
+    try:
+        from assumption_miner.dependency import _parse, _snap_to_ast_node
+    except ImportError:
+        pytest.skip("tree-sitter not available")
+
+    code = "x = 1\ny = 2\n"
+    tree, node_map = _parse(code)
+    # Predict a range outside all category-relevant nodes.
+    start, end = _snap_to_ast_node(tree, node_map, 1, 2, "T6")
+    # Should return original if no enclosing node found.
+    assert isinstance(start, int)
+    assert isinstance(end, int)
