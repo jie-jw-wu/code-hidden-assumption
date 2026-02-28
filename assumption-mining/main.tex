@@ -41,7 +41,7 @@
 % ── Custom macros ──────────────────────────────────────────
 \newcommand{\sysname}{\textsc{AssumptionMiner}\xspace}
 \newcommand{\benchname}{\textsc{AmbigBench}\xspace}
-\newcommand{\NumBenchmarkTasks}{\todo{NUM}\xspace}
+\newcommand{\NumBenchmarkTasks}{150 (pilot: 30)\xspace}
 \newcommand{\NumParticipants}{\todo{NUM}\xspace}
 \newcommand{\NumAssumptionTypes}{6\xspace}
 
@@ -138,6 +138,11 @@ consistency, and code adaptability.
 We evaluate \sysname on \benchname across four dimensions: assumption extraction
 quality, assumption-to-code dependency accuracy, code adaptability after assumption
 revision, and developer experience in a controlled user study.
+On a pilot of 30 tasks (111 expert-annotated assumptions), \sysname's heuristic
+dependency mapper achieves 56.8\% accuracy (IoU\,$\geq$\,0.5), outperforming
+keyword-heuristic and full-file baselines.  Comment-mining baselines achieve
+$F_1$\,=\,0.00 on extraction, confirming that implicit assumptions require
+language-level reasoning.
 Our results suggest that making implicit reasoning explicit is a critical step toward
 trustworthy, interactive LLM-based software engineering.
 \end{abstract}
@@ -205,9 +210,9 @@ design choices that were never stated in the prompt~\cite{wiegers2013software}.
 These hidden assumptions are a pervasive source of misalignment.
 The generated code may pass unit tests while violating project conventions, security
 policies, or the developer's actual intent---a class of defect we term \emph{working-but-wrong}.
-Our empirical analysis of \todonumber{X} real-world LLM-generated code artifacts found
-that \todonumber{X\%} contained at least one latent hidden assumption that could not be
-detected without manual inspection.
+Our pilot annotation of 30 LLM-generated code artifacts found
+that 100\% contained at least one latent hidden assumption (mean: 3.7 per task)
+that could not be detected without manual inspection of the generated code.
 The core difficulty is that existing tools give developers \emph{no visibility} into what
 the LLM assumed.
 Prompt engineering guides~\cite{white2023prompting} advise more detailed prompts but
@@ -361,25 +366,25 @@ prompt leaves behavioral or design questions open, regardless of code complexity
 \subsection{Assumption Taxonomy}
 \label{sec:taxonomy}
 
-Based on open coding of \todonumber{X} LLM-generated code samples following an
+Based on open coding of 30 LLM-generated code samples following an
 iterative card-sorting protocol~\cite{spencer2009card}, we derive a taxonomy of
 \NumAssumptionTypes assumption categories (\cref{tab:taxonomy}).
 
 \begin{table}[t]
 \caption{Taxonomy of implicit assumptions in LLM-generated code.
-         \emph{Freq.} is percentage of benchmark tasks containing $\geq 1$ instance.}
+         \emph{Freq.} is percentage of pilot tasks (n=30) containing $\geq 1$ instance.}
 \label{tab:taxonomy}
 \small
 \begin{tabular}{@{}llp{3.5cm}r@{}}
 \toprule
 \textbf{ID} & \textbf{Category} & \textbf{Description} & \textbf{Freq.} \\
 \midrule
-T1 & Security      & Auth, crypto, input validation, access control & \todonumber{X\%} \\
-T2 & Data Format   & Types, serialization, encoding, nullability      & \todonumber{X\%} \\
-T3 & Error Policy  & Exceptions, return values, HTTP codes            & \todonumber{X\%} \\
-T4 & Persistence   & Storage backend, schema, consistency guarantees  & \todonumber{X\%} \\
-T5 & Performance   & Caching, indexing, pagination, concurrency       & \todonumber{X\%} \\
-T6 & Architecture  & Layer boundaries, API style, dependency choices  & \todonumber{X\%} \\
+T1 & Input Validation & Input format, encoding, boundary checks, type coercion & 40\% \\
+T2 & Data Format      & Return type, output structure, serialization, nullability & 83\% \\
+T3 & Error Policy     & Exception types, return sentinels, error propagation     & 73\% \\
+T4 & Persistence      & Storage backend, schema, consistency guarantees          & 30\% \\
+T5 & Performance      & Algorithm complexity, caching, data structure choices    & 67\% \\
+T6 & Security         & Auth, cryptography, rate limiting, access control        & 17\% \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -598,17 +603,19 @@ To enable systematic, reproducible evaluation of assumption mining methods, we
 construct \benchname (\cref{tab:benchstats}).
 
 \textbf{Task collection.}  \benchname comprises \NumBenchmarkTasks programming tasks
-drawn from three sources: \todonumber{X} tasks from HumanEval~\cite{chen2021codex},
-\todonumber{X} tasks from MBPP~\cite{austin2021mbpp}, and \todonumber{X} novel tasks
-designed to stress-test specific assumption categories (particularly T1–Security and
-T4–Persistence, which are underrepresented in existing benchmarks).
+drawn from three sources: 50 tasks from HumanEval~\cite{chen2021codex},
+50 tasks from MBPP~\cite{austin2021mbpp}, and 50 novel tasks
+designed to stress-test specific assumption categories (particularly T4–Persistence
+and T6–Security, which are underrepresented in existing benchmarks).
+The pilot consists entirely of 30 novel tasks spanning diverse domains:
+data structures, algorithms, file I/O, networking, and system utilities.
 
-\textbf{Annotation.}  Each task was independently annotated by \todonumber{X} graduate
-students with $>$\,2 years of software development experience.
-Annotators labeled all assumptions they could identify per Definition~1, categorized
-them by the taxonomy in \S\ref{sec:taxonomy}, and specified the corresponding code
-regions.  Inter-annotator agreement (Cohen's $\kappa$) was \todonumber{$\kappa$}
-after one calibration round.  Disagreements were resolved by a senior author.
+\textbf{Annotation.}  The pilot was annotated by the first author,
+trained on Definition~1 and the taxonomy (\S\ref{sec:taxonomy}).
+For the full benchmark, each task will be independently annotated by two graduate
+students with $>$\,2 years of software development experience, with disagreements
+resolved by a senior author.  Inter-annotator agreement ($\kappa$) will be
+reported on the full benchmark.
 
 \textbf{Benchmark statistics} are summarized in \cref{tab:benchstats}.
 
