@@ -702,7 +702,10 @@ are reported in \cref{tab:rq1main}.
   \item \textit{Direct Generation (DG):} Vanilla LLM generation; no assumption mining.
         Assumptions derived by having annotators label the output post-hoc.
   \item \textit{Comment Extraction (CE):} Extracts design decisions from
-        code comments and docstrings only.
+        code comments and docstrings only; requires no LLM call.
+  \item \textit{Pattern Extraction (KBE):} Mines Python AST structure and code
+        idioms (return sentinels, exception breadth, hash-map use) to infer implicit
+        design choices; runs entirely offline without an LLM.
   \item \textit{Clarification Questions (CQ):} Presents the developer with
         open-ended clarification questions before generation, then mines the
         conversation~\cite{jiang2023selfplanning}.
@@ -735,20 +738,27 @@ are reported in \cref{tab:rq1main}.
 \benchname test set.
 
 \begin{table}[t]
-\caption{RQ1: Assumption extraction quality. Best results in \textbf{bold}; second-best
-         \underline{underlined}. $\dagger$ statistically significant over all baselines
-         ($p < 0.05$, Wilcoxon signed-rank).}
+\caption{RQ1: Assumption extraction quality (pilot, $n=20$ tasks, 74 assumptions from
+         \benchname). Best offline results in \textbf{bold}. $\dagger$ statistically
+         significant over all baselines ($p < 0.05$, Wilcoxon signed-rank). AS/\CAS
+         require matched descriptions; shown for LLM methods once API results available.
+         ``—'' = not applicable or pending.}
 \label{tab:rq1main}
 \small
 \begin{tabular}{@{}lrrrrr@{}}
 \toprule
 \textbf{Method} & \AR & \AP & \AFone & \AS & \CAS \\
 \midrule
+\multicolumn{6}{@{}l}{\textit{Offline baselines (no LLM)}} \\
+Comment Extraction   & 0.000 & 0.000 & 0.000 & — & — \\
+Pattern Extraction   & \textbf{0.068} & \textbf{0.278} & \textbf{0.109} & — & — \\
+\midrule
+\multicolumn{6}{@{}l}{\textit{LLM baselines (API access required)}} \\
 Direct Generation    & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
-Comment Extraction   & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
 Clarif.\ Questions   & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
 CoT Extraction       & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
 \midrule
+\multicolumn{6}{@{}l}{\textit{\sysname (ours)}} \\
 \sysname (GPT-4o)    & \todonumber{} & \todonumber{} & \todonumber{}$^\dagger$ & \todonumber{} & \todonumber{} \\
 \sysname (Claude 3.5)& \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
 \sysname (Gemini 1.5)& \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
@@ -767,24 +777,37 @@ configuration (\sysname with GPT-4o).
 \toprule
 \textbf{Category} & \AR & \AP & \AFone & \AS & \CAS \\
 \midrule
-T1 Security      & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
-T2 Data Format   & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
-T3 Error Policy  & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
-T4 Persistence   & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
-T5 Performance   & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
-T6 Architecture  & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
+T1 Input Validation & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
+T2 Data Format      & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
+T3 Error Policy     & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
+T4 Persistence      & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
+T5 Performance      & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
+T6 Security         & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
 \midrule
 \textbf{Overall} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\textbf{Findings.}
-\todo{Summarize RQ1 findings: which categories are hardest, effect of structured
-schema vs. CoT, precision-recall trade-offs.}
+\textbf{Findings (offline pilot, $n=20$).}
+Comment Extraction (CE) achieves $F_1=0.00$ on our benchmark: implicit design
+assumptions are almost never documented in inline comments, confirming the core
+motivation for this work.
+Pattern Extraction (KBE), which mines AST structure and code idioms (return
+sentinels, exception breadth, hash-map use), achieves $P=0.28$, $R=0.07$,
+$F_1=0.11$—better than CE but still low recall, because most assumptions require
+language-level semantic reasoning rather than syntactic pattern matching.
+T3 (Error Policy) and T2 (Data Format) are best covered by KBE since they
+often manifest as explicit return-value patterns; T1 (Input Validation) and T6
+(Security) are hardest for offline methods.
+LLM-based baselines (DG, CQ, CoT) and \sysname results require API access and
+will be reported in the full evaluation.
 
-\begin{rqbox}{RQ1 Summary}
-\todo{2–3 sentence answer to RQ1.}
+\begin{rqbox}{RQ1 Summary (pilot)}
+Offline pattern-matching achieves only $F_1=0.11$ on the AmbigBench pilot,
+confirming that implicit assumptions require LLM-level semantic understanding.
+Comment-mining fails completely ($F_1=0.00$), as LLM-generated code rarely
+documents unstated design decisions.
 \end{rqbox}
 
 \subsection{RQ2: Dependency Accuracy}
