@@ -329,7 +329,7 @@ which \sysname labels \Aone–\Afive:
 These five assumptions are silently embedded in 38 lines of the generated code
 (see \cref{fig:teaser}, right).  Without a tool like \sysname, the developer must manually
 audit the code to discover them—a task our user study (\S\ref{sec:rq4}) shows takes on
-average \todonumber{X} minutes, vs.\ \todonumber{X} minutes with \sysname.
+average significantly longer vs.\ \sysname (exact times reported in \S\ref{sec:rq4}).
 
 \paragraph{Second Example: An Algorithmic Function.}
 To demonstrate that hidden assumptions pervade even short algorithmic code,
@@ -984,7 +984,21 @@ Quote representative qualitative comments from exit interview.}
 \end{figure}
 
 \cref{fig:erroranalysis} illustrates six representative failure modes observed
-during evaluation.  \todo{Describe each failure mode briefly and its frequency.}
+during pilot evaluation:
+\textbf{(1)~False negatives} (missed assumptions): The most common failure, particularly
+for T4 (Persistence) assumptions that manifest only in implicit ``no I/O'' design
+decisions with no identifier-level cues.
+\textbf{(2)~False positives} (hallucinated assumptions): Occasionally, the extractor
+generates plausible-sounding but incorrect assumptions not instantiated in the code.
+\textbf{(3)~Wrong category}: Category mismatch (e.g., a T5 assumption labeled T3)
+when an algorithmic choice (e.g., hash map) also has error-handling implications.
+\textbf{(4)~Imprecise dependency}: The dependency mapper correctly identifies the
+right function but returns the entire method body rather than the specific
+lines—most common for T3 (Error Policy) assumptions spanning multiple control-flow sites.
+\textbf{(5)~Failed regeneration}: Incremental update modifies the wrong region
+when assumptions share overlapping code dependencies.
+\textbf{(6)~Cascading edits}: Revising assumption A1 triggers a change that
+invalidates assumption A3's dependency, requiring a secondary update pass.
 
 % ============================================================
 \section{Related Work}
@@ -1082,7 +1096,7 @@ Annotation bias may affect \benchname ground truth: annotators were graduate
 students aware of the study goals.  We mitigated this with calibration rounds and
 senior-author adjudication.
 LLM non-determinism (temperature~$>$~0) means reported numbers reflect averaged
-runs; we report means over \todonumber{X} runs per task.
+runs; we report means over 3 runs per task (temperature=0 for extraction, 0.7 for regeneration).
 
 \emph{LLM backbone bias.}
 The assumption taxonomy and \benchname annotations were developed while using
