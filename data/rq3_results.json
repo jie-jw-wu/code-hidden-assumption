@@ -1,32 +1,32 @@
 {
   "config": {
     "benchmark": "data/benchmark_mini.json",
-    "n_tasks": 20,
+    "n_tasks": 30,
     "dry_run": true
   },
   "summary": {
     "AssumptionMiner": {
-      "n": 20,
+      "n": 30,
       "pass_rate": 1.0,
-      "mean_edit_dist": 0.3646,
+      "mean_edit_dist": 0.3284,
       "mean_latency_s": 0.001
     },
     "MR": {
-      "n": 20,
+      "n": 30,
       "pass_rate": 1.0,
-      "mean_edit_dist": 0.3726,
+      "mean_edit_dist": 0.3363,
       "mean_latency_s": 0.001
     },
     "FR": {
-      "n": 20,
+      "n": 30,
       "pass_rate": 1.0,
       "mean_edit_dist": 0.0,
       "mean_latency_s": 0.001
     },
     "IPE": {
-      "n": 20,
+      "n": 30,
       "pass_rate": 1.0,
-      "mean_edit_dist": 0.3742,
+      "mean_edit_dist": 0.3379,
       "mean_latency_s": 0.001
     }
   },
@@ -548,6 +548,266 @@
       "IPE": {
         "syntax_ok": true,
         "edit_dist": 0.5059,
+        "latency_s": 0.001
+      }
+    },
+    {
+      "task_id": "mini_021",
+      "flipped_assumption_id": "A1",
+      "old_description": "Uses collections.deque for O(1) enqueue and dequeue operations.",
+      "new_description": "use a plain list",
+      "AssumptionMiner": {
+        "syntax_ok": true,
+        "edit_dist": 0.2076,
+        "latency_s": 0.001
+      },
+      "MR": {
+        "syntax_ok": true,
+        "edit_dist": 0.2151,
+        "latency_s": 0.001
+      },
+      "FR": {
+        "syntax_ok": true,
+        "edit_dist": 0.0,
+        "latency_s": 0.001
+      },
+      "IPE": {
+        "syntax_ok": true,
+        "edit_dist": 0.2166,
+        "latency_s": 0.001
+      }
+    },
+    {
+      "task_id": "mini_022",
+      "flipped_assumption_id": "A1",
+      "old_description": "Validates email using a regex pattern rather than a full RFC 5321 parser.",
+      "new_description": "use email.headerregistry",
+      "AssumptionMiner": {
+        "syntax_ok": true,
+        "edit_dist": 0.346,
+        "latency_s": 0.001
+      },
+      "MR": {
+        "syntax_ok": true,
+        "edit_dist": 0.3548,
+        "latency_s": 0.001
+      },
+      "FR": {
+        "syntax_ok": true,
+        "edit_dist": 0.0,
+        "latency_s": 0.001
+      },
+      "IPE": {
+        "syntax_ok": true,
+        "edit_dist": 0.3566,
+        "latency_s": 0.001
+      }
+    },
+    {
+      "task_id": "mini_023",
+      "flipped_assumption_id": "A1",
+      "old_description": "Assumes the input list is already sorted in ascending order.",
+      "new_description": "sort before searching",
+      "AssumptionMiner": {
+        "syntax_ok": true,
+        "edit_dist": 0.2796,
+        "latency_s": 0.001
+      },
+      "MR": {
+        "syntax_ok": true,
+        "edit_dist": 0.2886,
+        "latency_s": 0.001
+      },
+      "FR": {
+        "syntax_ok": true,
+        "edit_dist": 0.0,
+        "latency_s": 0.001
+      },
+      "IPE": {
+        "syntax_ok": true,
+        "edit_dist": 0.2903,
+        "latency_s": 0.001
+      }
+    },
+    {
+      "task_id": "mini_024",
+      "flipped_assumption_id": "A1",
+      "old_description": "Uses O(m*n) dynamic programming table storing all intermediate distances.",
+      "new_description": "two-row rolling array O(n) space",
+      "AssumptionMiner": {
+        "syntax_ok": true,
+        "edit_dist": 0.2199,
+        "latency_s": 0.001
+      },
+      "MR": {
+        "syntax_ok": true,
+        "edit_dist": 0.2262,
+        "latency_s": 0.001
+      },
+      "FR": {
+        "syntax_ok": true,
+        "edit_dist": 0.0,
+        "latency_s": 0.001
+      },
+      "IPE": {
+        "syntax_ok": true,
+        "edit_dist": 0.2274,
+        "latency_s": 0.001
+      }
+    },
+    {
+      "task_id": "mini_025",
+      "flipped_assumption_id": "A1",
+      "old_description": "Delivers messages synchronously (in-process function calls), not asynchronously.",
+      "new_description": "async delivery with asyncio",
+      "AssumptionMiner": {
+        "syntax_ok": true,
+        "edit_dist": 0.1582,
+        "latency_s": 0.001
+      },
+      "MR": {
+        "syntax_ok": true,
+        "edit_dist": 0.163,
+        "latency_s": 0.001
+      },
+      "FR": {
+        "syntax_ok": true,
+        "edit_dist": 0.0,
+        "latency_s": 0.001
+      },
+      "IPE": {
+        "syntax_ok": true,
+        "edit_dist": 0.164,
+        "latency_s": 0.001
+      }
+    },
+    {
+      "task_id": "mini_026",
+      "flipped_assumption_id": "A1",
+      "old_description": "Uses a 10-second default timeout to bound blocking time.",
+      "new_description": "no timeout (block indefinitely)",
+      "AssumptionMiner": {
+        "syntax_ok": true,
+        "edit_dist": 0.3482,
+        "latency_s": 0.001
+      },
+      "MR": {
+        "syntax_ok": true,
+        "edit_dist": 0.3578,
+        "latency_s": 0.001
+      },
+      "FR": {
+        "syntax_ok": true,
+        "edit_dist": 0.0,
+        "latency_s": 0.001
+      },
+      "IPE": {
+        "syntax_ok": true,
+        "edit_dist": 0.3596,
+        "latency_s": 0.001
+      }
+    },
+    {
+      "task_id": "mini_027",
+      "flipped_assumption_id": "A1",
+      "old_description": "Raises KeyError if a record does not contain the grouping key.",
+      "new_description": "skip records missing the key",
+      "AssumptionMiner": {
+        "syntax_ok": true,
+        "edit_dist": 0.32,
+        "latency_s": 0.001
+      },
+      "MR": {
+        "syntax_ok": true,
+        "edit_dist": 0.3289,
+        "latency_s": 0.001
+      },
+      "FR": {
+        "syntax_ok": true,
+        "edit_dist": 0.0,
+        "latency_s": 0.001
+      },
+      "IPE": {
+        "syntax_ok": true,
+        "edit_dist": 0.3307,
+        "latency_s": 0.001
+      }
+    },
+    {
+      "task_id": "mini_028",
+      "flipped_assumption_id": "A1",
+      "old_description": "Uses time.perf_counter() for high-resolution wall-clock timing.",
+      "new_description": "time.time() (lower resolution)",
+      "AssumptionMiner": {
+        "syntax_ok": true,
+        "edit_dist": 0.2739,
+        "latency_s": 0.001
+      },
+      "MR": {
+        "syntax_ok": true,
+        "edit_dist": 0.2819,
+        "latency_s": 0.001
+      },
+      "FR": {
+        "syntax_ok": true,
+        "edit_dist": 0.0,
+        "latency_s": 0.001
+      },
+      "IPE": {
+        "syntax_ok": true,
+        "edit_dist": 0.2835,
+        "latency_s": 0.001
+      }
+    },
+    {
+      "task_id": "mini_029",
+      "flipped_assumption_id": "A1",
+      "old_description": "Refills tokens lazily (on consume) rather than using a background thread.",
+      "new_description": "background thread periodically adding tokens",
+      "AssumptionMiner": {
+        "syntax_ok": true,
+        "edit_dist": 0.1826,
+        "latency_s": 0.001
+      },
+      "MR": {
+        "syntax_ok": true,
+        "edit_dist": 0.1877,
+        "latency_s": 0.001
+      },
+      "FR": {
+        "syntax_ok": true,
+        "edit_dist": 0.0,
+        "latency_s": 0.001
+      },
+      "IPE": {
+        "syntax_ok": true,
+        "edit_dist": 0.1887,
+        "latency_s": 0.001
+      }
+    },
+    {
+      "task_id": "mini_030",
+      "flipped_assumption_id": "A1",
+      "old_description": "Ignores lines beginning with '#' as comments.",
+      "new_description": "treat # as a regular character",
+      "AssumptionMiner": {
+        "syntax_ok": true,
+        "edit_dist": 0.2263,
+        "latency_s": 0.001
+      },
+      "MR": {
+        "syntax_ok": true,
+        "edit_dist": 0.2345,
+        "latency_s": 0.001
+      },
+      "FR": {
+        "syntax_ok": true,
+        "edit_dist": 0.0,
+        "latency_s": 0.001
+      },
+      "IPE": {
+        "syntax_ok": true,
+        "edit_dist": 0.2362,
         "latency_s": 0.001
       }
     }
