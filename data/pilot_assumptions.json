@@ -1000,5 +1000,483 @@
         "code_refs": []
       }
     ]
+  },
+  {
+    "sample_id": "mini_021",
+    "prompt": "Implement a simple queue data structure with enqueue and dequeue operations.",
+    "code": "from collections import deque\n\nclass Queue:\n    def __init__(self):\n        self._data = deque()\n\n    def enqueue(self, item):\n        self._data.append(item)\n\n    def dequeue(self):\n        if not self._data:\n            raise IndexError(\"dequeue from empty queue\")\n        return self._data.popleft()\n\n    def is_empty(self):\n        return len(self._data) == 0\n\n    def size(self):\n        return len(self._data)\n",
+    "assumptions": [
+      {
+        "id": "A1",
+        "category": "T5",
+        "description": "Uses collections.deque for O(1) enqueue and dequeue operations.",
+        "rationale": "deque provides O(1) popleft vs O(n) for list.pop(0).",
+        "alternatives": [
+          "use a plain list",
+          "use a singly linked list"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A2",
+        "category": "T3",
+        "description": "Raises IndexError when dequeuing from an empty queue rather than returning None.",
+        "rationale": "Consistent with Python built-in container semantics (e.g., list.pop).",
+        "alternatives": [
+          "return None",
+          "return a sentinel value"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A3",
+        "category": "T2",
+        "description": "Queue is unbounded \u2014 no maximum size limit.",
+        "rationale": "Simplest correct implementation; caller controls queue growth.",
+        "alternatives": [
+          "bounded queue with maxsize",
+          "raise when full"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A4",
+        "category": "T2",
+        "description": "Accepts any Python object as a queue item (no type constraint).",
+        "rationale": "Duck-typed container; most general default.",
+        "alternatives": [
+          "typed queue (generics)",
+          "restrict to hashable items"
+        ],
+        "code_refs": []
+      }
+    ]
+  },
+  {
+    "sample_id": "mini_022",
+    "prompt": "Write a function that checks if a string is a valid email address.",
+    "code": "import re\n\n_EMAIL_RE = re.compile(\n    r'^[a-zA-Z0-9._%+\\-]+@[a-zA-Z0-9.\\-]+\\.[a-zA-Z]{2,}$'\n)\n\ndef is_valid_email(email: str) -> bool:\n    if not isinstance(email, str):\n        return False\n    return bool(_EMAIL_RE.match(email.strip()))\n",
+    "assumptions": [
+      {
+        "id": "A1",
+        "category": "T1",
+        "description": "Validates email using a regex pattern rather than a full RFC 5321 parser.",
+        "rationale": "Regex covers the common case; full RFC parsing is rarely needed.",
+        "alternatives": [
+          "use email.headerregistry",
+          "use dnspython for MX check"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A2",
+        "category": "T1",
+        "description": "Strips leading/trailing whitespace before matching, silently accepting padded input.",
+        "rationale": "Common UX affordance for copy-pasted email addresses.",
+        "alternatives": [
+          "require exact input with no whitespace",
+          "raise on leading/trailing space"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A3",
+        "category": "T2",
+        "description": "Returns a boolean (True/False) rather than a validation result object with error details.",
+        "rationale": "Simple boolean is sufficient for most callers.",
+        "alternatives": [
+          "return (bool, error_message)",
+          "raise ValidationError with details"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A4",
+        "category": "T3",
+        "description": "Returns False for non-string input rather than raising TypeError.",
+        "rationale": "Defensive; avoids crash when called with None from web forms.",
+        "alternatives": [
+          "raise TypeError",
+          "coerce to str first"
+        ],
+        "code_refs": []
+      }
+    ]
+  },
+  {
+    "sample_id": "mini_023",
+    "prompt": "Implement a binary search function that searches a sorted list for a target value.",
+    "code": "def binary_search(arr, target):\n    low, high = 0, len(arr) - 1\n    while low <= high:\n        mid = (low + high) // 2\n        if arr[mid] == target:\n            return mid\n        elif arr[mid] < target:\n            low = mid + 1\n        else:\n            high = mid - 1\n    return -1\n",
+    "assumptions": [
+      {
+        "id": "A1",
+        "category": "T1",
+        "description": "Assumes the input list is already sorted in ascending order.",
+        "rationale": "Binary search requires sorted input; sorting is caller's responsibility.",
+        "alternatives": [
+          "sort before searching",
+          "raise if not sorted"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A2",
+        "category": "T3",
+        "description": "Returns -1 when target is not found, following C-style sentinel convention.",
+        "rationale": "-1 is a common 'not found' sentinel for index-returning search functions.",
+        "alternatives": [
+          "return None",
+          "raise ValueError('Target not found')"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A3",
+        "category": "T2",
+        "description": "Returns the index of the first occurrence found (not necessarily leftmost for duplicates).",
+        "rationale": "Standard binary search finds any match, not necessarily the leftmost.",
+        "alternatives": [
+          "find leftmost occurrence",
+          "find rightmost occurrence",
+          "return all indices"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A4",
+        "category": "T5",
+        "description": "Uses integer floor division to compute midpoint avoiding overflow.",
+        "rationale": "Python ints are arbitrary precision, but (low+high)//2 is idiomatic.",
+        "alternatives": [
+          "low + (high-low)//2 (overflow-safe in fixed-width languages)"
+        ],
+        "code_refs": []
+      }
+    ]
+  },
+  {
+    "sample_id": "mini_024",
+    "prompt": "Write a function that computes the Levenshtein (edit) distance between two strings.",
+    "code": "def levenshtein(s1: str, s2: str) -> int:\n    m, n = len(s1), len(s2)\n    dp = [[0] * (n + 1) for _ in range(m + 1)]\n    for i in range(m + 1):\n        dp[i][0] = i\n    for j in range(n + 1):\n        dp[0][j] = j\n    for i in range(1, m + 1):\n        for j in range(1, n + 1):\n            if s1[i - 1] == s2[j - 1]:\n                dp[i][j] = dp[i - 1][j - 1]\n            else:\n                dp[i][j] = 1 + min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1])\n    return dp[m][n]\n",
+    "assumptions": [
+      {
+        "id": "A1",
+        "category": "T5",
+        "description": "Uses O(m*n) dynamic programming table storing all intermediate distances.",
+        "rationale": "Classic DP formulation; easy to understand and implement correctly.",
+        "alternatives": [
+          "two-row rolling array O(n) space",
+          "recursive with memoization"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A2",
+        "category": "T5",
+        "description": "All edit operations (insertion, deletion, substitution) cost 1.",
+        "rationale": "Standard Levenshtein definition; equal-cost edits.",
+        "alternatives": [
+          "weighted edit distance with different costs",
+          "Damerau-Levenshtein with transpositions"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A3",
+        "category": "T2",
+        "description": "Returns a non-negative integer distance (not a similarity score).",
+        "rationale": "Raw distance is most flexible; callers can normalize if needed.",
+        "alternatives": [
+          "return normalized similarity in [0,1]",
+          "return ratio like difflib"
+        ],
+        "code_refs": []
+      }
+    ]
+  },
+  {
+    "sample_id": "mini_025",
+    "prompt": "Implement a simple pub/sub message broker that allows topics, subscribers, and message publishing.",
+    "code": "from collections import defaultdict\nfrom typing import Callable\n\nclass MessageBroker:\n    def __init__(self):\n        self._subscribers: dict[str, list[Callable]] = defaultdict(list)\n\n    def subscribe(self, topic: str, callback: Callable) -> None:\n        self._subscribers[topic].append(callback)\n\n    def unsubscribe(self, topic: str, callback: Callable) -> None:\n        if topic in self._subscribers:\n            try:\n                self._subscribers[topic].remove(callback)\n            except ValueError:\n                pass\n\n    def publish(self, topic: str, message: object) -> int:\n        callbacks = self._subscribers.get(topic, [])\n        for cb in callbacks:\n            cb(message)\n        return len(callbacks)\n",
+    "assumptions": [
+      {
+        "id": "A1",
+        "category": "T5",
+        "description": "Delivers messages synchronously (in-process function calls), not asynchronously.",
+        "rationale": "Simplest correct implementation; no thread pool or event loop needed.",
+        "alternatives": [
+          "async delivery with asyncio",
+          "thread-pool delivery",
+          "queue-based async"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A2",
+        "category": "T3",
+        "description": "Silently ignores unsubscribe calls for callbacks that are not registered.",
+        "rationale": "Idempotent unsubscribe avoids spurious errors for cleanup code.",
+        "alternatives": [
+          "raise KeyError/ValueError if not subscribed",
+          "return bool indicating success"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A3",
+        "category": "T3",
+        "description": "Does not catch exceptions raised by subscriber callbacks; caller errors propagate.",
+        "rationale": "Fail-fast semantics; avoids silently swallowing errors in callbacks.",
+        "alternatives": [
+          "wrap each callback in try/except and log",
+          "collect and re-raise all errors"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A4",
+        "category": "T2",
+        "description": "publish() returns the count of notified subscribers rather than None.",
+        "rationale": "Useful for callers to verify at least one subscriber received the message.",
+        "alternatives": [
+          "return None",
+          "return list of callback results"
+        ],
+        "code_refs": []
+      }
+    ]
+  },
+  {
+    "sample_id": "mini_026",
+    "prompt": "Write a Python function that downloads a URL and returns the response body as text.",
+    "code": "import urllib.request\n\ndef download(url: str, timeout: int = 10, encoding: str = \"utf-8\") -> str:\n    with urllib.request.urlopen(url, timeout=timeout) as resp:\n        raw = resp.read()\n    return raw.decode(encoding)\n",
+    "assumptions": [
+      {
+        "id": "A1",
+        "category": "T5",
+        "description": "Uses a 10-second default timeout to bound blocking time.",
+        "rationale": "Prevents indefinite hang on slow or unresponsive servers.",
+        "alternatives": [
+          "no timeout (block indefinitely)",
+          "configurable per-call timeout"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A2",
+        "category": "T1",
+        "description": "Decodes response bytes using UTF-8 encoding by default.",
+        "rationale": "UTF-8 is the most common web encoding; other encodings are rare.",
+        "alternatives": [
+          "detect encoding from Content-Type header",
+          "return raw bytes"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A3",
+        "category": "T3",
+        "description": "Propagates URLError/HTTPError on network failures rather than catching and returning None.",
+        "rationale": "Fail-fast; callers can handle specific error types.",
+        "alternatives": [
+          "return None on error",
+          "return (str, error) tuple"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A4",
+        "category": "T4",
+        "description": "Reads entire response body into memory before returning; no streaming.",
+        "rationale": "Simplest implementation; acceptable for typical web responses.",
+        "alternatives": [
+          "return a generator streaming chunks",
+          "write to file for large responses"
+        ],
+        "code_refs": []
+      }
+    ]
+  },
+  {
+    "sample_id": "mini_027",
+    "prompt": "Implement a function that groups a list of dictionaries by a specified key.",
+    "code": "from collections import defaultdict\n\ndef group_by(records: list[dict], key: str) -> dict[str, list[dict]]:\n    groups: dict[str, list[dict]] = defaultdict(list)\n    for record in records:\n        groups[record[key]].append(record)\n    return dict(groups)\n",
+    "assumptions": [
+      {
+        "id": "A1",
+        "category": "T3",
+        "description": "Raises KeyError if a record does not contain the grouping key.",
+        "rationale": "Strict access fails fast on malformed data.",
+        "alternatives": [
+          "skip records missing the key",
+          "use record.get(key, 'unknown')"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A2",
+        "category": "T2",
+        "description": "Returns a plain dict (not defaultdict) so callers cannot accidentally create new keys.",
+        "rationale": "Returning defaultdict would let callers write groups['new'] = [] unintentionally.",
+        "alternatives": [
+          "return defaultdict directly",
+          "return OrderedDict preserving insertion order"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A3",
+        "category": "T5",
+        "description": "Preserves insertion order of records within each group (Python 3.7+ dict ordering).",
+        "rationale": "Python dicts are ordered since 3.7; no explicit sorting needed.",
+        "alternatives": [
+          "sort within each group",
+          "use an explicit OrderedDict"
+        ],
+        "code_refs": []
+      }
+    ]
+  },
+  {
+    "sample_id": "mini_028",
+    "prompt": "Write a decorator that measures and prints the execution time of a function.",
+    "code": "import time\nfrom functools import wraps\n\ndef timeit(func):\n    @wraps(func)\n    def wrapper(*args, **kwargs):\n        start = time.perf_counter()\n        result = func(*args, **kwargs)\n        elapsed = time.perf_counter() - start\n        print(f\"{func.__name__} took {elapsed:.4f}s\")\n        return result\n    return wrapper\n",
+    "assumptions": [
+      {
+        "id": "A1",
+        "category": "T5",
+        "description": "Uses time.perf_counter() for high-resolution wall-clock timing.",
+        "rationale": "perf_counter is the highest resolution timer available; appropriate for short functions.",
+        "alternatives": [
+          "time.time() (lower resolution)",
+          "time.process_time() (CPU time only)"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A2",
+        "category": "T4",
+        "description": "Prints timing to stdout rather than logging to a logger or returning the value.",
+        "rationale": "print is simpler; no logging configuration needed.",
+        "alternatives": [
+          "log with logging.debug",
+          "return elapsed time as second return value"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A3",
+        "category": "T3",
+        "description": "Exceptions raised by the wrapped function propagate normally; timing is not reported on error.",
+        "rationale": "Simplest semantics; wrapping exceptions would complicate tracebacks.",
+        "alternatives": [
+          "catch exceptions, still print timing, then re-raise",
+          "always report timing"
+        ],
+        "code_refs": []
+      }
+    ]
+  },
+  {
+    "sample_id": "mini_029",
+    "prompt": "Implement a simple token bucket rate limiter class.",
+    "code": "import time\n\nclass TokenBucket:\n    def __init__(self, capacity: int, refill_rate: float):\n        self.capacity = capacity\n        self.tokens = capacity\n        self.refill_rate = refill_rate\n        self._last_refill = time.monotonic()\n\n    def _refill(self):\n        now = time.monotonic()\n        elapsed = now - self._last_refill\n        added = elapsed * self.refill_rate\n        self.tokens = min(self.capacity, self.tokens + added)\n        self._last_refill = now\n\n    def consume(self, tokens: int = 1) -> bool:\n        self._refill()\n        if self.tokens >= tokens:\n            self.tokens -= tokens\n            return True\n        return False\n",
+    "assumptions": [
+      {
+        "id": "A1",
+        "category": "T5",
+        "description": "Refills tokens lazily (on consume) rather than using a background thread.",
+        "rationale": "Lazy refill avoids threading complexity; accurate for single-threaded callers.",
+        "alternatives": [
+          "background thread periodically adding tokens",
+          "asyncio task"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A2",
+        "category": "T6",
+        "description": "Not thread-safe: concurrent consume() calls can race on self.tokens.",
+        "rationale": "Simpler implementation without locking; caller must serialize access if multi-threaded.",
+        "alternatives": [
+          "use threading.Lock around consume/_refill",
+          "use atomic operations"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A3",
+        "category": "T2",
+        "description": "consume() returns a boolean indicating success rather than raising when rate-limited.",
+        "rationale": "Boolean allows callers to handle rejection gracefully without exception handling.",
+        "alternatives": [
+          "raise RateLimitExceeded",
+          "block until tokens available"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A4",
+        "category": "T5",
+        "description": "Bucket starts full (tokens = capacity) rather than empty.",
+        "rationale": "Full bucket allows burst at startup; common token bucket convention.",
+        "alternatives": [
+          "start empty",
+          "start at capacity/2"
+        ],
+        "code_refs": []
+      }
+    ]
+  },
+  {
+    "sample_id": "mini_030",
+    "prompt": "Write a function that parses a simple key=value configuration string and returns a dictionary.",
+    "code": "def parse_config(config_str: str) -> dict[str, str]:\n    result = {}\n    for line in config_str.splitlines():\n        line = line.strip()\n        if not line or line.startswith('#'):\n            continue\n        if '=' not in line:\n            continue\n        key, _, value = line.partition('=')\n        result[key.strip()] = value.strip()\n    return result\n",
+    "assumptions": [
+      {
+        "id": "A1",
+        "category": "T1",
+        "description": "Ignores lines beginning with '#' as comments.",
+        "rationale": "# is the de-facto comment character in .ini / config files.",
+        "alternatives": [
+          "treat # as a regular character",
+          "support ; as comment delimiter too"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A2",
+        "category": "T1",
+        "description": "Uses '=' as the key-value delimiter and takes only the first '=' (via partition).",
+        "rationale": "partition ensures values containing '=' are preserved correctly.",
+        "alternatives": [
+          "split on first ':' as delimiter",
+          "split on '=' and join remainder"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A3",
+        "category": "T1",
+        "description": "Silently skips malformed lines that do not contain '='.",
+        "rationale": "Lenient parsing is more robust for hand-edited config files.",
+        "alternatives": [
+          "raise on malformed lines",
+          "log a warning for each skipped line"
+        ],
+        "code_refs": []
+      },
+      {
+        "id": "A4",
+        "category": "T2",
+        "description": "All values are returned as strings; no type coercion (int, bool, float).",
+        "rationale": "Type coercion requires schema knowledge; string values are always safe.",
+        "alternatives": [
+          "coerce obvious ints/bools",
+          "accept a type schema argument"
+        ],
+        "code_refs": []
+      }
+    ]
   }
 ]

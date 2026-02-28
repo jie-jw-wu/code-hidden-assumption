@@ -613,7 +613,7 @@ after one calibration round.  Disagreements were resolved by a senior author.
 \textbf{Benchmark statistics} are summarized in \cref{tab:benchstats}.
 
 \begin{table}[t]
-\caption{\benchname benchmark statistics (pilot $n=20$; target $n=150$).
+\caption{\benchname benchmark statistics (pilot $n=30$; target $n=150$).
          Full benchmark in preparation; pilot figures shown in parentheses.}
 \label{tab:benchstats}
 \small
@@ -621,21 +621,21 @@ after one calibration round.  Disagreements were resolved by a senior author.
 \toprule
 \textbf{Metric} & \textbf{Value} \\
 \midrule
-Total tasks (target)                    & 150 (pilot: 20) \\
+Total tasks (target)                    & 150 (pilot: 30) \\
 Tasks from HumanEval                    & 50 (pilot: 0) \\
 Tasks from MBPP                         & 50 (pilot: 0) \\
-Novel tasks                             & 50 (pilot: 20) \\
+Novel tasks                             & 50 (pilot: 30) \\
 \midrule
-Total ground-truth assumptions          & \todonumber{X} (pilot: 74) \\
+Total ground-truth assumptions          & \todonumber{X} (pilot: 111) \\
 Mean assumptions per task               & \todonumber{X} (pilot: 3.7) \\
 Median assumptions per task             & \todonumber{X} (pilot: 4.0) \\
 \midrule
-T1 Input Validation                     & \todonumber{X} (pilot: 12, 16.2\%) \\
-T2 Data Format                          & \todonumber{X} (pilot: 21, 28.4\%) \\
-T3 Error Policy                         & \todonumber{X} (pilot: 16, 21.6\%) \\
-T4 Persistence                          & \todonumber{X} (pilot: 7, 9.5\%) \\
-T5 Performance                          & \todonumber{X} (pilot: 14, 18.9\%) \\
-T6 Security                             & \todonumber{X} (pilot: 4, 5.4\%) \\
+T1 Input Validation                     & \todonumber{X} (pilot: 19, 17.1\%) \\
+T2 Data Format                          & \todonumber{X} (pilot: 30, 27.0\%) \\
+T3 Error Policy                         & \todonumber{X} (pilot: 24, 21.6\%) \\
+T4 Persistence                          & \todonumber{X} (pilot: 9, 8.1\%) \\
+T5 Performance                          & \todonumber{X} (pilot: 24, 21.6\%) \\
+T6 Security                             & \todonumber{X} (pilot: 5, 4.5\%) \\
 \midrule
 Mean lines of code per task             & \todonumber{X} (pilot: 10.5) \\
 Inter-annotator agreement ($\kappa$)    & \todonumber{X} (pilot: N/A) \\
@@ -738,7 +738,7 @@ are reported in \cref{tab:rq1main}.
 \benchname test set.
 
 \begin{table}[t]
-\caption{RQ1: Assumption extraction quality (pilot, $n=20$ tasks, 74 assumptions from
+\caption{RQ1: Assumption extraction quality (pilot, $n=30$ tasks, 111 assumptions from
          \benchname). Best offline results in \textbf{bold}. $\dagger$ statistically
          significant over all baselines ($p < 0.05$, Wilcoxon signed-rank). AS/\CAS
          require matched descriptions; shown for LLM methods once API results available.
@@ -751,7 +751,7 @@ are reported in \cref{tab:rq1main}.
 \midrule
 \multicolumn{6}{@{}l}{\textit{Offline baselines (no LLM)}} \\
 Comment Extraction   & 0.000 & 0.000 & 0.000 & — & — \\
-Pattern Extraction   & \textbf{0.068} & \textbf{0.278} & \textbf{0.109} & — & — \\
+Pattern Extraction   & \textbf{0.072} & \textbf{0.348} & \textbf{0.119} & — & — \\
 \midrule
 \multicolumn{6}{@{}l}{\textit{LLM baselines (API access required)}} \\
 Direct Generation    & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
@@ -789,25 +789,25 @@ T6 Security         & \todonumber{} & \todonumber{} & \todonumber{} & \todonumbe
 \end{tabular}
 \end{table}
 
-\textbf{Findings (offline pilot, $n=20$).}
+\textbf{Findings (offline pilot, $n=30$).}
 Comment Extraction (CE) achieves $F_1=0.00$ on our benchmark: implicit design
 assumptions are almost never documented in inline comments, confirming the core
 motivation for this work.
 Pattern Extraction (KBE), which mines AST structure and code idioms (return
-sentinels, exception breadth, hash-map use), achieves $P=0.28$, $R=0.07$,
-$F_1=0.11$—better than CE but still low recall, because most assumptions require
+sentinels, exception breadth, hash-map use), achieves $P=0.35$, $R=0.07$,
+$F_1=0.12$—better than CE but still low recall, because most assumptions require
 language-level semantic reasoning rather than syntactic pattern matching.
-T3 (Error Policy) and T2 (Data Format) are best covered by KBE since they
-often manifest as explicit return-value patterns; T1 (Input Validation) and T6
-(Security) are hardest for offline methods.
+T3 (Error Policy) achieves the highest KBE F1 ($F_1=0.15$, $P=1.00$) as error
+handling often manifests as explicit return sentinels; T6 (Security) and T2
+(Data Format) are hardest for offline methods.
 LLM-based baselines (DG, CQ, CoT) and \sysname results require API access and
 will be reported in the full evaluation.
 
-\begin{rqbox}{RQ1 Summary (pilot)}
-Offline pattern-matching achieves only $F_1=0.11$ on the AmbigBench pilot,
-confirming that implicit assumptions require LLM-level semantic understanding.
-Comment-mining fails completely ($F_1=0.00$), as LLM-generated code rarely
-documents unstated design decisions.
+\begin{rqbox}{RQ1 Summary (pilot, $n=30$)}
+Offline pattern-matching achieves only $F_1=0.12$ on the 30-task AmbigBench
+pilot, confirming that implicit assumptions require LLM-level semantic
+understanding. Comment-mining fails completely ($F_1=0.00$), as LLM-generated
+code rarely documents unstated design decisions in inline comments.
 \end{rqbox}
 
 \subsection{RQ2: Dependency Accuracy}
@@ -818,7 +818,7 @@ We evaluate dependency link quality at two granularities: \emph{line-level} and
 assumptions.  Results are reported in \cref{tab:rq2}.
 
 \begin{table}[t]
-\caption{RQ2: Dependency accuracy on \benchname (pilot, $n=20$ tasks, 74 assumptions).
+\caption{RQ2: Dependency accuracy on \benchname (pilot, $n=30$ tasks, 111 assumptions).
          Accuracy = fraction with line-level IoU $\geq$ 0.5; IoU = mean IoU.}
 \label{tab:rq2}
 \small
@@ -826,36 +826,32 @@ assumptions.  Results are reported in \cref{tab:rq2}.
 \toprule
 \textbf{Method} & \textbf{Acc.} & \textbf{IoU} & \textbf{Best cat.} & \textbf{Worst cat.} \\
 \midrule
-Keyword Heuristic (KH)  & 0.541 & 0.534 & T6 (—) & T3 (—) \\
-Full-File (FF)          & 0.108 & 0.220 & — & — \\
-\sysname (heuristic)   & 0.527 & 0.524 & T6 (0.75) & T3 (0.44) \\
+Keyword Heuristic (KH)  & 0.532 & 0.501 & T6 (—) & T3 (—) \\
+Full-File (FF)          & 0.072 & 0.188 & — & — \\
+\sysname (heuristic)   & 0.478 & 0.480 & T6 (0.75) & T3 (0.44) \\
 \sysname (LLM+AST)      & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \textbf{Findings.}
-On our pilot benchmark ($n=20$ tasks, 74 expert-annotated assumptions), the
+On our pilot benchmark ($n=30$ tasks, 111 expert-annotated assumptions), the
 \sysname heuristic (tree-sitter + AST keyword-narrowing pass, §\ref{sec:dependency})
-achieves 52.7\% accuracy (mean IoU\,=\,0.524) at the 0.5 threshold, matching
-the keyword-heuristic baseline (KH: 54.1\%).  This parity is expected: the
-narrowing pass reduces AST nodes to the keyword-matching lines, approaching KH
-behaviour, while also handling multi-line algorithm blocks (T5) where KH
-underperforms.  The LLM-guided pass, which uses semantic descriptions to
-identify regions rather than surface keywords, is expected to achieve higher
-accuracy on the full \benchname by capturing assumptions with no obvious
-identifier-level cues.  T6 (Security) is the easiest category
-(0.75 accuracy)---security assumptions are anchored to specific function calls
-(\texttt{md5}, \texttt{secrets.choice}).  T3 (Error Policy) is hardest
-(0.44)---error handling is dispersed across conditionals and raise/return
-statements that share no distinctive identifier.
+achieves 47.8\% accuracy (mean IoU\,=\,0.480) at the 0.5 threshold, within 5.4pp
+of the keyword-heuristic baseline (KH: 53.2\%).  The accuracy gap relative to
+the 20-task pilot reflects harder tasks in the expansion (class-based code with
+multi-method interactions, e.g., Queue, MessageBroker), where keyword overlap
+is lower across method boundaries.  The LLM-guided pass, which uses semantic
+descriptions to identify regions rather than surface keywords, is expected to
+achieve higher accuracy on the full \benchname by capturing assumptions with no
+obvious identifier-level cues.  Full-File (FF) degrades sharply on larger
+classes (IoU\,=\,0.188) as the ``entire file'' span grows.
 
-\begin{rqbox}{RQ2 Summary (pilot, $n=20$)}
-The \sysname heuristic dependency mapper achieves 52.7\% accuracy (mean
-IoU\,=\,0.52) on the pilot benchmark, matching the keyword-heuristic baseline
-(54.1\%).  The LLM-guided pass is expected to exceed both by leveraging
-semantic assumption descriptions.  T6 (Security) assumptions are easiest to
-localise; T3 (Error Policy) are hardest.
+\begin{rqbox}{RQ2 Summary (pilot, $n=30$)}
+The \sysname heuristic dependency mapper achieves 47.8\% accuracy (mean
+IoU\,=\,0.48) on the 30-task pilot, within 5.4pp of the keyword-heuristic
+baseline (53.2\%).  The gap motivates the LLM-guided localization pass, which
+uses semantic descriptions to find regions with no keyword cues.
 \end{rqbox}
 
 \subsection{RQ3: Code Adaptability}

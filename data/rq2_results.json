@@ -1,122 +1,122 @@
 {
   "overall": {
     "am": {
-      "n_evaluated": 74,
-      "n_correct": 39,
-      "accuracy": 0.527,
-      "mean_iou": 0.5235,
+      "n_evaluated": 111,
+      "n_correct": 53,
+      "accuracy": 0.4775,
+      "mean_iou": 0.4804,
       "threshold": 0.5
     },
     "kh": {
-      "n_evaluated": 74,
-      "n_correct": 40,
-      "accuracy": 0.5405,
-      "mean_iou": 0.5344,
+      "n_evaluated": 111,
+      "n_correct": 59,
+      "accuracy": 0.5315,
+      "mean_iou": 0.5007,
       "threshold": 0.5
     },
     "ff": {
-      "n_evaluated": 74,
+      "n_evaluated": 111,
       "n_correct": 8,
-      "accuracy": 0.1081,
-      "mean_iou": 0.2198,
+      "accuracy": 0.0721,
+      "mean_iou": 0.1881,
       "threshold": 0.5
     }
   },
   "per_category": {
     "am": {
       "T1": {
-        "n": 12,
-        "mean_iou": 0.5486,
-        "accuracy": 0.5
+        "n": 19,
+        "mean_iou": 0.557,
+        "accuracy": 0.5263
       },
       "T2": {
-        "n": 21,
-        "mean_iou": 0.5525,
-        "accuracy": 0.5238
+        "n": 30,
+        "mean_iou": 0.5212,
+        "accuracy": 0.5
       },
       "T3": {
-        "n": 16,
-        "mean_iou": 0.4188,
-        "accuracy": 0.4375
+        "n": 24,
+        "mean_iou": 0.3764,
+        "accuracy": 0.375
       },
       "T4": {
-        "n": 7,
-        "mean_iou": 0.5714,
-        "accuracy": 0.5714
+        "n": 9,
+        "mean_iou": 0.5556,
+        "accuracy": 0.5556
       },
       "T5": {
-        "n": 14,
-        "mean_iou": 0.5134,
-        "accuracy": 0.5714
+        "n": 24,
+        "mean_iou": 0.4002,
+        "accuracy": 0.4167
       },
       "T6": {
-        "n": 4,
-        "mean_iou": 0.6667,
-        "accuracy": 0.75
+        "n": 5,
+        "mean_iou": 0.6933,
+        "accuracy": 0.8
       }
     },
     "kh": {
       "T1": {
-        "n": 12,
-        "mean_iou": 0.6667,
-        "accuracy": 0.6667
+        "n": 19,
+        "mean_iou": 0.5965,
+        "accuracy": 0.6316
       },
       "T2": {
-        "n": 21,
-        "mean_iou": 0.5241,
-        "accuracy": 0.4762
+        "n": 30,
+        "mean_iou": 0.5002,
+        "accuracy": 0.5
       },
       "T3": {
-        "n": 16,
-        "mean_iou": 0.6146,
-        "accuracy": 0.6875
+        "n": 24,
+        "mean_iou": 0.5347,
+        "accuracy": 0.625
       },
       "T4": {
-        "n": 7,
+        "n": 9,
         "mean_iou": 0.5,
-        "accuracy": 0.5714
+        "accuracy": 0.5556
       },
       "T5": {
-        "n": 14,
-        "mean_iou": 0.3306,
-        "accuracy": 0.2857
+        "n": 24,
+        "mean_iou": 0.3804,
+        "accuracy": 0.375
       },
       "T6": {
-        "n": 4,
-        "mean_iou": 0.6442,
-        "accuracy": 0.75
+        "n": 5,
+        "mean_iou": 0.5554,
+        "accuracy": 0.6
       }
     },
     "ff": {
       "T1": {
-        "n": 12,
-        "mean_iou": 0.1868,
+        "n": 19,
+        "mean_iou": 0.1765,
         "accuracy": 0.0
       },
       "T2": {
-        "n": 21,
-        "mean_iou": 0.2199,
-        "accuracy": 0.1429
+        "n": 30,
+        "mean_iou": 0.1835,
+        "accuracy": 0.1
       },
       "T3": {
-        "n": 16,
-        "mean_iou": 0.1415,
+        "n": 24,
+        "mean_iou": 0.1418,
         "accuracy": 0.0
       },
       "T4": {
-        "n": 7,
-        "mean_iou": 0.1082,
+        "n": 9,
+        "mean_iou": 0.112,
         "accuracy": 0.0
       },
       "T5": {
-        "n": 14,
-        "mean_iou": 0.3554,
-        "accuracy": 0.2857
+        "n": 24,
+        "mean_iou": 0.2491,
+        "accuracy": 0.1667
       },
       "T6": {
-        "n": 4,
-        "mean_iou": 0.3521,
-        "accuracy": 0.25
+        "n": 5,
+        "mean_iou": 0.3271,
+        "accuracy": 0.2
       }
     }
   },
@@ -786,6 +786,339 @@
       "am_iou": 1.0,
       "kh_iou": 1.0,
       "ff_iou": 0.2
+    },
+    {
+      "sample_id": "mini_021",
+      "assumption_id": "A1",
+      "category": "T5",
+      "n_gt_refs": 1,
+      "am_iou": 0.0,
+      "kh_iou": 0.0,
+      "ff_iou": 0.0526
+    },
+    {
+      "sample_id": "mini_021",
+      "assumption_id": "A2",
+      "category": "T3",
+      "n_gt_refs": 1,
+      "am_iou": 1.0,
+      "kh_iou": 0.5,
+      "ff_iou": 0.1053
+    },
+    {
+      "sample_id": "mini_021",
+      "assumption_id": "A3",
+      "category": "T2",
+      "n_gt_refs": 1,
+      "am_iou": 0.0,
+      "kh_iou": 0.0,
+      "ff_iou": 0.1053
+    },
+    {
+      "sample_id": "mini_021",
+      "assumption_id": "A4",
+      "category": "T2",
+      "n_gt_refs": 1,
+      "am_iou": 0.3333,
+      "kh_iou": 0.5,
+      "ff_iou": 0.1053
+    },
+    {
+      "sample_id": "mini_022",
+      "assumption_id": "A1",
+      "category": "T1",
+      "n_gt_refs": 1,
+      "am_iou": 0.0,
+      "kh_iou": 0.3333,
+      "ff_iou": 0.3
+    },
+    {
+      "sample_id": "mini_022",
+      "assumption_id": "A2",
+      "category": "T1",
+      "n_gt_refs": 1,
+      "am_iou": 0.0,
+      "kh_iou": 0.0,
+      "ff_iou": 0.1
+    },
+    {
+      "sample_id": "mini_022",
+      "assumption_id": "A3",
+      "category": "T2",
+      "n_gt_refs": 1,
+      "am_iou": 1.0,
+      "kh_iou": 1.0,
+      "ff_iou": 0.1
+    },
+    {
+      "sample_id": "mini_022",
+      "assumption_id": "A4",
+      "category": "T3",
+      "n_gt_refs": 1,
+      "am_iou": 0.3333,
+      "kh_iou": 0.0,
+      "ff_iou": 0.2
+    },
+    {
+      "sample_id": "mini_023",
+      "assumption_id": "A1",
+      "category": "T1",
+      "n_gt_refs": 1,
+      "am_iou": 0.0,
+      "kh_iou": 0.0,
+      "ff_iou": 0.0909
+    },
+    {
+      "sample_id": "mini_023",
+      "assumption_id": "A2",
+      "category": "T3",
+      "n_gt_refs": 1,
+      "am_iou": 1.0,
+      "kh_iou": 1.0,
+      "ff_iou": 0.0909
+    },
+    {
+      "sample_id": "mini_023",
+      "assumption_id": "A3",
+      "category": "T2",
+      "n_gt_refs": 1,
+      "am_iou": 0.5,
+      "kh_iou": 0.5,
+      "ff_iou": 0.1818
+    },
+    {
+      "sample_id": "mini_023",
+      "assumption_id": "A4",
+      "category": "T5",
+      "n_gt_refs": 1,
+      "am_iou": 0.0,
+      "kh_iou": 0.0,
+      "ff_iou": 0.0909
+    },
+    {
+      "sample_id": "mini_024",
+      "assumption_id": "A1",
+      "category": "T5",
+      "n_gt_refs": 1,
+      "am_iou": 0.0,
+      "kh_iou": 0.0,
+      "ff_iou": 0.0714
+    },
+    {
+      "sample_id": "mini_024",
+      "assumption_id": "A2",
+      "category": "T5",
+      "n_gt_refs": 1,
+      "am_iou": 0.0,
+      "kh_iou": 0.0,
+      "ff_iou": 0.0714
+    },
+    {
+      "sample_id": "mini_024",
+      "assumption_id": "A3",
+      "category": "T2",
+      "n_gt_refs": 1,
+      "am_iou": 1.0,
+      "kh_iou": 1.0,
+      "ff_iou": 0.0714
+    },
+    {
+      "sample_id": "mini_025",
+      "assumption_id": "A1",
+      "category": "T5",
+      "n_gt_refs": 1,
+      "am_iou": 0.0,
+      "kh_iou": 0.0,
+      "ff_iou": 0.0909
+    },
+    {
+      "sample_id": "mini_025",
+      "assumption_id": "A2",
+      "category": "T3",
+      "n_gt_refs": 1,
+      "am_iou": 0.0,
+      "kh_iou": 0.0,
+      "ff_iou": 0.0909
+    },
+    {
+      "sample_id": "mini_025",
+      "assumption_id": "A3",
+      "category": "T3",
+      "n_gt_refs": 1,
+      "am_iou": 0.0,
+      "kh_iou": 0.5,
+      "ff_iou": 0.0909
+    },
+    {
+      "sample_id": "mini_025",
+      "assumption_id": "A4",
+      "category": "T2",
+      "n_gt_refs": 1,
+      "am_iou": 0.2,
+      "kh_iou": 0.0,
+      "ff_iou": 0.0455
+    },
+    {
+      "sample_id": "mini_026",
+      "assumption_id": "A1",
+      "category": "T5",
+      "n_gt_refs": 1,
+      "am_iou": 0.5,
+      "kh_iou": 1.0,
+      "ff_iou": 0.1667
+    },
+    {
+      "sample_id": "mini_026",
+      "assumption_id": "A2",
+      "category": "T1",
+      "n_gt_refs": 1,
+      "am_iou": 1.0,
+      "kh_iou": 1.0,
+      "ff_iou": 0.1667
+    },
+    {
+      "sample_id": "mini_026",
+      "assumption_id": "A3",
+      "category": "T3",
+      "n_gt_refs": 1,
+      "am_iou": 0.0,
+      "kh_iou": 0.0,
+      "ff_iou": 0.3333
+    },
+    {
+      "sample_id": "mini_026",
+      "assumption_id": "A4",
+      "category": "T4",
+      "n_gt_refs": 1,
+      "am_iou": 0.0,
+      "kh_iou": 0.0,
+      "ff_iou": 0.1667
+    },
+    {
+      "sample_id": "mini_027",
+      "assumption_id": "A1",
+      "category": "T3",
+      "n_gt_refs": 1,
+      "am_iou": 0.0,
+      "kh_iou": 1.0,
+      "ff_iou": 0.1429
+    },
+    {
+      "sample_id": "mini_027",
+      "assumption_id": "A2",
+      "category": "T2",
+      "n_gt_refs": 1,
+      "am_iou": 1.0,
+      "kh_iou": 1.0,
+      "ff_iou": 0.1429
+    },
+    {
+      "sample_id": "mini_027",
+      "assumption_id": "A3",
+      "category": "T5",
+      "n_gt_refs": 1,
+      "am_iou": 1.0,
+      "kh_iou": 0.5,
+      "ff_iou": 0.2857
+    },
+    {
+      "sample_id": "mini_028",
+      "assumption_id": "A1",
+      "category": "T5",
+      "n_gt_refs": 1,
+      "am_iou": 0.3333,
+      "kh_iou": 1.0,
+      "ff_iou": 0.0833
+    },
+    {
+      "sample_id": "mini_028",
+      "assumption_id": "A2",
+      "category": "T4",
+      "n_gt_refs": 1,
+      "am_iou": 1.0,
+      "kh_iou": 1.0,
+      "ff_iou": 0.0833
+    },
+    {
+      "sample_id": "mini_028",
+      "assumption_id": "A3",
+      "category": "T3",
+      "n_gt_refs": 1,
+      "am_iou": 0.0,
+      "kh_iou": 0.0,
+      "ff_iou": 0.0833
+    },
+    {
+      "sample_id": "mini_029",
+      "assumption_id": "A1",
+      "category": "T5",
+      "n_gt_refs": 1,
+      "am_iou": 0.25,
+      "kh_iou": 1.0,
+      "ff_iou": 0.0455
+    },
+    {
+      "sample_id": "mini_029",
+      "assumption_id": "A2",
+      "category": "T6",
+      "n_gt_refs": 1,
+      "am_iou": 0.8,
+      "kh_iou": 0.2,
+      "ff_iou": 0.2273
+    },
+    {
+      "sample_id": "mini_029",
+      "assumption_id": "A3",
+      "category": "T2",
+      "n_gt_refs": 1,
+      "am_iou": 0.0,
+      "kh_iou": 0.0,
+      "ff_iou": 0.0455
+    },
+    {
+      "sample_id": "mini_029",
+      "assumption_id": "A4",
+      "category": "T5",
+      "n_gt_refs": 1,
+      "am_iou": 0.3333,
+      "kh_iou": 1.0,
+      "ff_iou": 0.0455
+    },
+    {
+      "sample_id": "mini_030",
+      "assumption_id": "A1",
+      "category": "T1",
+      "n_gt_refs": 1,
+      "am_iou": 1.0,
+      "kh_iou": 0.5,
+      "ff_iou": 0.1818
+    },
+    {
+      "sample_id": "mini_030",
+      "assumption_id": "A2",
+      "category": "T1",
+      "n_gt_refs": 1,
+      "am_iou": 1.0,
+      "kh_iou": 1.0,
+      "ff_iou": 0.0909
+    },
+    {
+      "sample_id": "mini_030",
+      "assumption_id": "A3",
+      "category": "T1",
+      "n_gt_refs": 1,
+      "am_iou": 1.0,
+      "kh_iou": 0.5,
+      "ff_iou": 0.1818
+    },
+    {
+      "sample_id": "mini_030",
+      "assumption_id": "A4",
+      "category": "T2",
+      "n_gt_refs": 1,
+      "am_iou": 0.0,
+      "kh_iou": 0.0,
+      "ff_iou": 0.0909
     }
   ],
   "threshold": 0.5
