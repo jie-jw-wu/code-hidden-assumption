@@ -728,11 +728,17 @@ T4 Persistence                          & — (pilot: 9, 8.1\%) \\
 T5 Performance                          & — (pilot: 24, 21.6\%) \\
 T6 Security                             & — (pilot: 5, 4.5\%) \\
 \midrule
-Mean lines of code per task             & — (pilot: 10.5) \\
+Mean lines of code per task             & — (pilot: 11.0) \\
+Mean code\_ref span (lines)            & — (pilot: 2.0; 67\% single-line) \\
 Inter-annotator agreement ($\kappa$)    & — (pilot: pending) \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+Pilot annotations show that 67\% of code references are single-line (mean span: 2.0 lines),
+confirming that implicit assumptions typically manifest at specific statements rather than
+diffuse code regions.  This motivates our IoU threshold of 0.5 for RQ2: a 50\% line-overlap
+is a meaningful match for the predominantly single- or double-line reference spans.
 
 \textbf{Metrics.}
 We define five evaluation metrics over $\mathcal{A}(p,c)$ and a reference set
