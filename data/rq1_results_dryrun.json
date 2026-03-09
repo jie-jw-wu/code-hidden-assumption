@@ -1,0 +1,344 @@
+{
+  "overall": {
+    "precision": 0.7391,
+    "recall": 0.1532,
+    "f1": 0.2537,
+    "n_tasks": 30,
+    "total_predicted": 23,
+    "total_ground_truth": 111
+  },
+  "per_category": {
+    "T1": {
+      "precision": 1.0,
+      "recall": 0.2105,
+      "f1": 0.3478
+    },
+    "T2": {
+      "precision": 1.0,
+      "recall": 0.0333,
+      "f1": 0.0645
+    },
+    "T3": {
+      "precision": 1.0,
+      "recall": 0.0833,
+      "f1": 0.1538
+    },
+    "T4": {
+      "precision": 0.6667,
+      "recall": 0.2222,
+      "f1": 0.3333
+    },
+    "T5": {
+      "precision": 0.6364,
+      "recall": 0.2917,
+      "f1": 0.4
+    },
+    "T6": {
+      "precision": 0.5,
+      "recall": 0.2,
+      "f1": 0.2857
+    }
+  },
+  "per_task": [
+    {
+      "task_id": "mini_001",
+      "source": "novel",
+      "n_predicted": 2,
+      "n_ground_truth": 4,
+      "true_positives": 2,
+      "precision": 1.0,
+      "recall": 0.5,
+      "f1": 0.6667
+    },
+    {
+      "task_id": "mini_002",
+      "source": "novel",
+      "n_predicted": 3,
+      "n_ground_truth": 5,
+      "true_positives": 2,
+      "precision": 0.6667,
+      "recall": 0.4,
+      "f1": 0.5
+    },
+    {
+      "task_id": "mini_003",
+      "source": "novel",
+      "n_predicted": 2,
+      "n_ground_truth": 4,
+      "true_positives": 1,
+      "precision": 0.5,
+      "recall": 0.25,
+      "f1": 0.3333
+    },
+    {
+      "task_id": "mini_004",
+      "source": "novel",
+      "n_predicted": 1,
+      "n_ground_truth": 3,
+      "true_positives": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    {
+      "task_id": "mini_005",
+      "source": "novel",
+      "n_predicted": 1,
+      "n_ground_truth": 4,
+      "true_positives": 1,
+      "precision": 1.0,
+      "recall": 0.25,
+      "f1": 0.4
+    },
+    {
+      "task_id": "mini_006",
+      "source": "novel",
+      "n_predicted": 0,
+      "n_ground_truth": 3,
+      "true_positives": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    {
+      "task_id": "mini_007",
+      "source": "novel",
+      "n_predicted": 0,
+      "n_ground_truth": 4,
+      "true_positives": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    {
+      "task_id": "mini_008",
+      "source": "novel",
+      "n_predicted": 1,
+      "n_ground_truth": 4,
+      "true_positives": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    {
+      "task_id": "mini_009",
+      "source": "novel",
+      "n_predicted": 0,
+      "n_ground_truth": 4,
+      "true_positives": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    {
+      "task_id": "mini_010",
+      "source": "novel",
+      "n_predicted": 1,
+      "n_ground_truth": 4,
+      "true_positives": 1,
+      "precision": 1.0,
+      "recall": 0.25,
+      "f1": 0.4
+    },
+    {
+      "task_id": "mini_011",
+      "source": "novel",
+      "n_predicted": 0,
+      "n_ground_truth": 4,
+      "true_positives": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    {
+      "task_id": "mini_012",
+      "source": "novel",
+      "n_predicted": 1,
+      "n_ground_truth": 3,
+      "true_positives": 1,
+      "precision": 1.0,
+      "recall": 0.3333,
+      "f1": 0.5
+    },
+    {
+      "task_id": "mini_013",
+      "source": "novel",
+      "n_predicted": 1,
+      "n_ground_truth": 3,
+      "true_positives": 1,
+      "precision": 1.0,
+      "recall": 0.3333,
+      "f1": 0.5
+    },
+    {
+      "task_id": "mini_014",
+      "source": "novel",
+      "n_predicted": 0,
+      "n_ground_truth": 3,
+      "true_positives": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    {
+      "task_id": "mini_015",
+      "source": "novel",
+      "n_predicted": 1,
+      "n_ground_truth": 4,
+      "true_positives": 1,
+      "precision": 1.0,
+      "recall": 0.25,
+      "f1": 0.4
+    },
+    {
+      "task_id": "mini_016",
+      "source": "novel",
+      "n_predicted": 1,
+      "n_ground_truth": 4,
+      "true_positives": 1,
+      "precision": 1.0,
+      "recall": 0.25,
+      "f1": 0.4
+    },
+    {
+      "task_id": "mini_017",
+      "source": "novel",
+      "n_predicted": 0,
+      "n_ground_truth": 3,
+      "true_positives": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    {
+      "task_id": "mini_018",
+      "source": "novel",
+      "n_predicted": 1,
+      "n_ground_truth": 4,
+      "true_positives": 1,
+      "precision": 1.0,
+      "recall": 0.25,
+      "f1": 0.4
+    },
+    {
+      "task_id": "mini_019",
+      "source": "novel",
+      "n_predicted": 1,
+      "n_ground_truth": 3,
+      "true_positives": 1,
+      "precision": 1.0,
+      "recall": 0.3333,
+      "f1": 0.5
+    },
+    {
+      "task_id": "mini_020",
+      "source": "novel",
+      "n_predicted": 1,
+      "n_ground_truth": 4,
+      "true_positives": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    {
+      "task_id": "mini_021",
+      "source": "novel",
+      "n_predicted": 0,
+      "n_ground_truth": 4,
+      "true_positives": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    {
+      "task_id": "mini_022",
+      "source": "novel",
+      "n_predicted": 1,
+      "n_ground_truth": 4,
+      "true_positives": 1,
+      "precision": 1.0,
+      "recall": 0.25,
+      "f1": 0.4
+    },
+    {
+      "task_id": "mini_023",
+      "source": "novel",
+      "n_predicted": 0,
+      "n_ground_truth": 4,
+      "true_positives": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    {
+      "task_id": "mini_024",
+      "source": "novel",
+      "n_predicted": 0,
+      "n_ground_truth": 3,
+      "true_positives": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    {
+      "task_id": "mini_025",
+      "source": "novel",
+      "n_predicted": 0,
+      "n_ground_truth": 4,
+      "true_positives": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    {
+      "task_id": "mini_026",
+      "source": "novel",
+      "n_predicted": 2,
+      "n_ground_truth": 4,
+      "true_positives": 2,
+      "precision": 1.0,
+      "recall": 0.5,
+      "f1": 0.6667
+    },
+    {
+      "task_id": "mini_027",
+      "source": "novel",
+      "n_predicted": 0,
+      "n_ground_truth": 3,
+      "true_positives": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    {
+      "task_id": "mini_028",
+      "source": "novel",
+      "n_predicted": 1,
+      "n_ground_truth": 3,
+      "true_positives": 1,
+      "precision": 1.0,
+      "recall": 0.3333,
+      "f1": 0.5
+    },
+    {
+      "task_id": "mini_029",
+      "source": "novel",
+      "n_predicted": 0,
+      "n_ground_truth": 4,
+      "true_positives": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    {
+      "task_id": "mini_030",
+      "source": "novel",
+      "n_predicted": 1,
+      "n_ground_truth": 4,
+      "true_positives": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    }
+  ]
+}

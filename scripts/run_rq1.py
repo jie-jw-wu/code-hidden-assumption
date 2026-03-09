@@ -87,7 +87,28 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--limit", type=int, default=None)
     p.add_argument("--generate-code", action="store_true",
                    help="Generate code for tasks that lack it (adds LLM calls)")
+    p.add_argument("--dry-run", action="store_true",
+                   help="Use offline KBE baseline instead of LLM (validates pipeline, no API key required)")
     return p.parse_args()
+
+
+def _dry_run_extract(prompt: str, code: str) -> list[dict]:
+    """Offline dry-run: use KBE (pattern-based) extractor instead of LLM."""
+    from assumption_miner.baselines import pattern_extraction
+
+    records = pattern_extraction(prompt, code)
+    return [
+        {
+            "id": r.id,
+            "category": r.category,
+            "description": r.description,
+            "confidence": r.confidence,
+            "alternatives": r.alternatives,
+            "rationale": r.rationale,
+            "severity": r.severity,
+        }
+        for r in records
+    ]
 
 
 def main() -> None:
@@ -151,14 +172,16 @@ def main() -> None:
                 continue
 
         log.info("[%d/%d] Extracting for %s …", i, len(annotated), task_id)
-        try:
-            records = extractor.extract_assumptions(prompt, code)
-            time.sleep(args.delay)
-        except Exception as exc:  # noqa: BLE001
-            log.error("  Extraction failed: %s", exc)
-            continue
-
-        predicted = [r.to_dict() for r in records]
+        if args.dry_run:
+            predicted = _dry_run_extract(prompt, code)
+        else:
+            try:
+                records = extractor.extract_assumptions(prompt, code)
+                time.sleep(args.delay)
+            except Exception as exc:  # noqa: BLE001
+                log.error("  Extraction failed: %s", exc)
+                continue
+            predicted = [r.to_dict() for r in records]
         tp, n_pred, n_gt = category_match(predicted, gt)
         prec, rec, f1 = prf(tp, n_pred, n_gt)
 
