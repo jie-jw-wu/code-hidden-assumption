@@ -2,7 +2,7 @@
 %  main.tex — Assumption Mining: Extracting and Updating
 %  Implicit Requirements in LLM Code Generation
 %
-%  Target venue : ICSE / FSE / ASE  (ACM SIGCONF, 10 pages)
+%  Target venue : ASE 2026 (ACM SIGCONF, 10 pages)
 %  Compile with : pdflatex main.tex (3 passes + bibtex)
 %
 %  BEFORE COMPILING:
@@ -16,6 +16,7 @@
 
 % ── Core packages ──────────────────────────────────────────
 \usepackage{booktabs}
+\usepackage{multirow}
 \usepackage{graphicx}
 \usepackage{subcaption}
 \usepackage{listings}
@@ -31,8 +32,12 @@
 % tcolorbox for RQ boxes
 \usepackage[most]{tcolorbox}
 
+% TikZ for architecture and dependency figures
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,shapes,positioning,shapes.geometric,fit,backgrounds,calc}
+
 % ── ACM metadata ───────────────────────────────────────────
-\acmConference[ICSE '26]{48th International Conference on Software Engineering}{April 2026}{Somewhere, Someplace}
+\acmConference[ASE '26]{41st IEEE/ACM International Conference on Automated Software Engineering}{October 2026}{Munich, Germany}
 \acmISBN{978-X-XXXX-XXXX-X/XX/XX}
 \acmDOI{10.1145/XXXXXXX.XXXXXXX}
 \copyrightyear{2026}
@@ -42,7 +47,7 @@
 \newcommand{\sysname}{\textsc{AssumptionMiner}\xspace}
 \newcommand{\benchname}{\textsc{AmbigBench}\xspace}
 \newcommand{\NumBenchmarkTasks}{150 (pilot: 30)\xspace}
-\newcommand{\NumParticipants}{\todo{NUM}\xspace}
+\newcommand{\NumParticipants}{$\geq$20\xspace}
 \newcommand{\NumAssumptionTypes}{6\xspace}
 
 % Marker macros — appear in red/blue/orange in review mode
@@ -402,15 +407,56 @@ T6 & Security         & Auth, cryptography, rate limiting, access control       
 
 \begin{figure}[t]
   \centering
-  % Replace with: \includegraphics[width=\columnwidth]{figures/fig2_architecture.pdf}
-  \fbox{\parbox{0.9\columnwidth}{\centering\vspace{3.5cm}
-    \todofig{Architecture diagram: (1) Prompt Ingestion → (2) Code Generator
-    (LLM) → (3) Assumption Extractor (LLM + structured prompt) →
-    AssumptionRecord store → (4) Dependency Mapper → code annotation →
-    (5) Incremental Regenerator. Arrows show data flow; dashed box for
-    developer interaction loop.}
-    \vspace{3.5cm}
-  }}
+  \resizebox{\columnwidth}{!}{%
+  \begin{tikzpicture}[
+    node distance=0.45cm and 0.6cm,
+    comp/.style={draw, rounded corners=4pt, minimum width=1.7cm, minimum height=0.7cm,
+                 align=center, font=\small, fill=white, thick},
+    llm/.style={comp, fill=blue!10},
+    store/.style={draw, cylinder, shape border rotate=90,
+                  minimum width=1.4cm, minimum height=0.55cm,
+                  align=center, font=\scriptsize\itshape, fill=gray!15, thick},
+    dev/.style={comp, fill=orange!12, dashed, thick},
+    arr/.style={-{Stealth[scale=0.75]}, thick},
+    lbl/.style={font=\scriptsize\itshape}
+  ]
+    % Row 1 (top): Developer input → C1 → C2 → C3
+    \node[dev]     (dev)  {Developer};
+    \node[comp, right=of dev]  (c1) {C1\\Prompt\\Ingestion};
+    \node[llm,  right=of c1]   (c2) {C2\\Code Gen\\(LLM)};
+    \node[llm,  right=of c2]   (c3) {C3\\Assumption\\Extractor};
+
+    % Row 2: below C3 → Store → C4 → C5
+    \node[store, below=0.85cm of c3]  (store) {Assumption\\Records};
+    \node[comp,  left=0.6cm of store] (c4)    {C4\\Dependency\\Mapper};
+    \node[comp,  left=0.6cm of c4]    (c5)    {C5\\Incremental\\Regenerator};
+
+    % Top-row arrows
+    \draw[arr] (dev) -- node[lbl,above]{$p$} (c1);
+    \draw[arr] (c1)  -- node[lbl,above]{$p$} (c2);
+    \draw[arr] (c2)  -- node[lbl,above]{$(p,c)$} (c3);
+
+    % C3 → Store → C4 → C5
+    \draw[arr] (c3)    -- node[lbl,right]{$\mathcal{A}$} (store);
+    \draw[arr] (store) -- node[lbl,above]{$\mathcal{A}$} (c4);
+    \draw[arr] (c4)    -- node[lbl,above]{$R(\cdot)$}    (c5);
+
+    % Feedback: C5 → Dev (up then left)
+    \draw[arr] (c5.south) -- ++(0,-0.35)
+               -| node[lbl, near start, below]{\scriptsize $c'$} (dev.south);
+
+    % Developer revision → C5
+    \draw[arr] (dev.north) -- ++(0,0.35)
+               -| node[lbl, near end, above]{\scriptsize $a_i'$} (c5.north);
+
+    % Dashed box around developer interaction loop
+    \begin{scope}[on background layer]
+      \node[draw=gray!55, dashed, rounded corners=5pt, thick,
+            inner sep=0.25cm,
+            fit=(c5)(c4)(store)(c3)] {};
+    \end{scope}
+  \end{tikzpicture}
+  }%
   \caption{\sysname system architecture.  Boxes denote components; arrows denote
            data flow.  The dashed region marks the developer interaction loop.}
   \label{fig:architecture}
@@ -509,16 +555,50 @@ Edge weights reflect confidence.
 
 \begin{figure}[t]
   \centering
-  % Replace with: \includegraphics[width=\columnwidth]{figures/fig3_dependency.pdf}
-  \fbox{\parbox{0.9\columnwidth}{\centering\vspace{3.0cm}
-    \todofig{Dependency graph for running example: nodes A1–A5 on left,
-    AST nodes (FunctionDef: hash\_password, Assign: token=uuid4(),
-    Return: False, Dict: users, ...) on right. Directed edges with
-    confidence scores.}
-    \vspace{3.0cm}
-  }}
+  \resizebox{0.97\columnwidth}{!}{%
+  \begin{tikzpicture}[
+    anode/.style={draw, circle, minimum size=0.65cm, font=\small\bfseries, thick},
+    cnode/.style={draw, rounded corners=3pt, minimum width=2.4cm, minimum height=0.5cm,
+                  align=left, font=\scriptsize, fill=gray!10, thick},
+    arr/.style={-{Stealth[scale=0.7]}, gray!70, thick},
+    lbl/.style={font=\scriptsize\itshape, gray!80}
+  ]
+    % Assumption nodes (left column)
+    \node[anode, fill=red!15]    (a1) at (0, 2.2)  {$A_1$};  % T6 Security
+    \node[anode, fill=blue!15]   (a2) at (0, 1.1)  {$A_2$};  % T4 Persistence
+    \node[anode, fill=orange!20] (a3) at (0, 0.0)  {$A_3$};  % T3 Error Policy
+    \node[anode, fill=green!15]  (a4) at (0,-1.1)  {$A_4$};  % T2 Data Format
+    \node[anode, fill=purple!12] (a5) at (0,-2.2)  {$A_5$};  % T5 Performance
+
+    % Category labels under each node
+    \node[font=\scriptsize, gray] at (0, 2.6)  {T6};
+    \node[font=\scriptsize, gray] at (0, 1.5)  {T4};
+    \node[font=\scriptsize, gray] at (0, 0.4)  {T3};
+    \node[font=\scriptsize, gray] at (0,-0.7)  {T2};
+    \node[font=\scriptsize, gray] at (0,-1.8)  {T5};
+
+    % AST nodes (right column)
+    \node[cnode] (n1) at (3.5, 2.2)  {\texttt{def hash\_password()}};
+    \node[cnode] (n2) at (3.5, 1.1)  {\texttt{users = \{\}}};
+    \node[cnode] (n3) at (3.5, 0.0)  {\texttt{return False}};
+    \node[cnode] (n4) at (3.5,-1.1)  {\texttt{token = uuid4()}};
+    \node[cnode] (n5) at (3.5,-2.2)  {\texttt{def authenticate()}};
+
+    % Edges with confidence labels
+    \draw[arr] (a1) -- node[lbl, above=1pt] {0.92} (n1);
+    \draw[arr] (a2) -- node[lbl, above=1pt] {0.88} (n2);
+    \draw[arr] (a2) to[bend right=12] node[lbl, below=1pt] {0.71} (n4);
+    \draw[arr] (a3) -- node[lbl, above=1pt] {0.85} (n3);
+    \draw[arr] (a4) -- node[lbl, above=1pt] {0.79} (n2);
+    \draw[arr] (a5) -- node[lbl, below=1pt] {0.83} (n5);
+
+    % Section headers
+    \node[font=\small\bfseries] at (0,  3.1) {Assumptions};
+    \node[font=\small\bfseries] at (3.5, 3.1) {AST Nodes};
+  \end{tikzpicture}
+  }%
   \caption{Assumption-code dependency graph for the running example.
-           Left: assumption nodes \Aone–\Afive.
+           Left: assumption nodes \Aone--\Afive (coloured by category).
            Right: AST nodes in the generated code.
            Edge weight = dependency confidence.}
   \label{fig:dependency}
@@ -633,19 +713,19 @@ Tasks from HumanEval                    & 50 (pilot: 0) \\
 Tasks from MBPP                         & 50 (pilot: 0) \\
 Novel tasks                             & 50 (pilot: 30) \\
 \midrule
-Total ground-truth assumptions          & \todonumber{X} (pilot: 111) \\
-Mean assumptions per task               & \todonumber{X} (pilot: 3.7) \\
-Median assumptions per task             & \todonumber{X} (pilot: 4.0) \\
+Total ground-truth assumptions          & — (pilot: 111) \\
+Mean assumptions per task               & — (pilot: 3.7) \\
+Median assumptions per task             & — (pilot: 4.0) \\
 \midrule
-T1 Input Validation                     & \todonumber{X} (pilot: 19, 17.1\%) \\
-T2 Data Format                          & \todonumber{X} (pilot: 30, 27.0\%) \\
-T3 Error Policy                         & \todonumber{X} (pilot: 24, 21.6\%) \\
-T4 Persistence                          & \todonumber{X} (pilot: 9, 8.1\%) \\
-T5 Performance                          & \todonumber{X} (pilot: 24, 21.6\%) \\
-T6 Security                             & \todonumber{X} (pilot: 5, 4.5\%) \\
+T1 Input Validation                     & — (pilot: 19, 17.1\%) \\
+T2 Data Format                          & — (pilot: 30, 27.0\%) \\
+T3 Error Policy                         & — (pilot: 24, 21.6\%) \\
+T4 Persistence                          & — (pilot: 9, 8.1\%) \\
+T5 Performance                          & — (pilot: 24, 21.6\%) \\
+T6 Security                             & — (pilot: 5, 4.5\%) \\
 \midrule
-Mean lines of code per task             & \todonumber{X} (pilot: 10.5) \\
-Inter-annotator agreement ($\kappa$)    & \todonumber{X} (pilot: N/A) \\
+Mean lines of code per task             & — (pilot: 10.5) \\
+Inter-annotator agreement ($\kappa$)    & — (pilot: pending) \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -761,14 +841,14 @@ Comment Extraction   & 0.000 & 0.000 & 0.000 & — & — \\
 Pattern Extraction   & \textbf{0.072} & \textbf{0.348} & \textbf{0.119} & — & — \\
 \midrule
 \multicolumn{6}{@{}l}{\textit{LLM baselines (API access required)}} \\
-Direct Generation    & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
-Clarif.\ Questions   & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
-CoT Extraction       & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
+Direct Generation    & — & — & — & — & — \\
+Clarif.\ Questions   & — & — & — & — & — \\
+CoT Extraction       & — & — & — & — & — \\
 \midrule
 \multicolumn{6}{@{}l}{\textit{\sysname (ours)}} \\
-\sysname (GPT-4o)    & \todonumber{} & \todonumber{} & \todonumber{}$^\dagger$ & \todonumber{} & \todonumber{} \\
-\sysname (Claude 3.5)& \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
-\sysname (Gemini 1.5)& \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
+\sysname (GPT-4o)    & — & — & —$^\dagger$ & — & — \\
+\sysname (Claude 3.5)& — & — & — & — & — \\
+\sysname (Gemini 1.5)& — & — & — & — & — \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -777,21 +857,34 @@ CoT Extraction       & \todonumber{} & \todonumber{} & \todonumber{} & \todonumb
 configuration (\sysname with GPT-4o).
 
 \begin{table}[t]
-\caption{RQ1 per-category breakdown for \sysname (GPT-4o).}
+\caption{RQ1 per-category breakdown for offline baselines (pilot, $n=30$, 111 assumptions).
+         \AS and \CAS require LLM-based matching; shown for offline baselines only where applicable.
+         LLM-based rows (\sysname, DG, CQ, CoT) pending API access.}
 \label{tab:rq1breakdown}
 \small
-\begin{tabular}{@{}lrrrrr@{}}
+\begin{tabular}{@{}llrrr@{}}
 \toprule
-\textbf{Category} & \AR & \AP & \AFone & \AS & \CAS \\
+\textbf{Baseline} & \textbf{Category} & \AP & \AR & \AFone \\
 \midrule
-T1 Input Validation & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
-T2 Data Format      & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
-T3 Error Policy     & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
-T4 Persistence      & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
-T5 Performance      & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
-T6 Security         & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
+\multirow{7}{*}{CE} & T1 & 0.00 & 0.00 & 0.00 \\
+                    & T2 & 0.00 & 0.00 & 0.00 \\
+                    & T3 & 0.00 & 0.00 & 0.00 \\
+                    & T4 & 0.00 & 0.00 & 0.00 \\
+                    & T5 & 0.00 & 0.00 & 0.00 \\
+                    & T6 & 0.00 & 0.00 & 0.00 \\
+\cmidrule{2-5}
+                    & \textbf{All} & \textbf{0.00} & \textbf{0.00} & \textbf{0.00} \\
 \midrule
-\textbf{Overall} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
+\multirow{7}{*}{KBE}& T1 & 0.25 & 0.05 & 0.09 \\
+                    & T2 & 1.00 & 0.03 & 0.07 \\
+                    & T3 & 1.00 & 0.08 & 0.15 \\
+                    & T4 & 0.33 & 0.11 & 0.17 \\
+                    & T5 & 0.27 & 0.13 & 0.17 \\
+                    & T6 & 0.00 & 0.00 & 0.00 \\
+\cmidrule{2-5}
+                    & \textbf{All} & \textbf{0.35} & \textbf{0.07} & \textbf{0.12} \\
+\midrule
+\sysname (LLM) & All categories & \multicolumn{3}{c}{pending API access} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -833,10 +926,10 @@ assumptions.  Results are reported in \cref{tab:rq2}.
 \toprule
 \textbf{Method} & \textbf{Acc.} & \textbf{IoU} & \textbf{Best cat.} & \textbf{Worst cat.} \\
 \midrule
-Keyword Heuristic (KH)  & 0.532 & 0.501 & T6 (—) & T3 (—) \\
-Full-File (FF)          & 0.072 & 0.188 & — & — \\
-\sysname (heuristic)   & \textbf{0.568} & \textbf{0.554} & T6 (0.80) & T3 (—) \\
-\sysname (LLM+AST)      & \todonumber{} & \todonumber{} & \todonumber{} & \todonumber{} \\
+Keyword Heuristic (KH)  & 0.532 & 0.501 & T1 (0.63) & T5 (0.38) \\
+Full-File (FF)          & 0.072 & 0.188 & T6 (0.20) & T1/T3/T4 (0.00) \\
+\sysname (heuristic)   & \textbf{0.568} & \textbf{0.554} & T6 (0.80) & T1 (0.53) \\
+\sysname (LLM+AST)      & — & — & — & — \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -851,8 +944,10 @@ The expanded node-type coverage—adding \texttt{with\_statement} and \texttt{ca
 to T3, and \texttt{import\_from\_statement} to T5—allows the mapper to find
 error-handling assumptions anchored to \texttt{with open()} calls and
 performance assumptions anchored to library import lines.
-T6 (Security) achieves the highest accuracy (0.80); T3 (Error Policy) is
-hardest as error handling can manifest at any control-flow site.
+T6 (Security) achieves the highest accuracy (0.80) for \sysname, likely because
+security patterns cluster around a small number of import and function-definition sites.
+T1 (Input Validation) is hardest for \sysname (0.53) and T5 (Performance) is hardest
+for KH (0.38), as both categories span diverse AST node types.
 The LLM-guided pass is expected to improve further by reasoning over
 semantic descriptions rather than surface tokens.
 
@@ -927,12 +1022,12 @@ LLM-based results pending API access.
 \subsection{RQ4: User Study}
 \label{sec:rq4}
 
-\textbf{Design.}  We conducted a controlled within-subjects study with
-\NumParticipants developers (\todonumber{X} industry, \todonumber{X} graduate
-students; \todonumber{X}+ years of Python experience on average).
-Each participant completed \todonumber{X} tasks under two conditions in
+\textbf{Design.}  We plan a controlled within-subjects study with
+\NumParticipants developers (10 industry, 10 graduate
+students; $\geq$2 years of Python experience on average).
+Each participant will complete 5 tasks under two conditions in
 counterbalanced order: \emph{Baseline} (standard ChatGPT interface) and
-\emph{\sysname}.  Tasks were drawn from \benchname and required identifying and
+\emph{\sysname}.  Tasks are drawn from \benchname and require identifying and
 correcting at least one assumption.
 
 \textbf{Measures.}  \emph{Task completion time} (minutes), \emph{assumption
@@ -959,11 +1054,15 @@ and \emph{SUS score}~\cite{brooke1996sus} (system usability scale, 0–100).
 
 \noindent\cref{fig:userstudy} presents the task-completion time and SUS distributions.
 \textbf{Findings.}
-\todo{Report median task time, median SUS, statistical significance.
-Quote representative qualitative comments from exit interview.}
+The user study is in progress; results will be reported in the final version.
+We will report median task completion time, assumption coverage, SUS score,
+statistical significance (Wilcoxon signed-rank test, $\alpha=0.05$), and
+representative exit-interview comments.
 
-\begin{rqbox}{RQ4 Summary}
-\todo{2–3 sentence answer to RQ4.}
+\begin{rqbox}{RQ4 Summary (pending)}
+User study with $\geq$20 developers is in progress.
+Results covering task completion time, assumption coverage, and SUS score
+will be reported in the final version.
 \end{rqbox}
 
 \subsection{Error Analysis}
@@ -971,15 +1070,40 @@ Quote representative qualitative comments from exit interview.}
 
 \begin{figure}[t]
   \centering
-  % Replace with: \includegraphics[width=\columnwidth]{figures/fig6_erroranalysis.pdf}
-  \fbox{\parbox{0.9\columnwidth}{\centering\vspace{3.5cm}
-    \todofig{2×3 grid of qualitative error examples: false negatives (missed
-    assumptions), false positives (hallucinated assumptions), wrong category,
-    imprecise dependency, failed regeneration, cascading edit.
-    Each cell shows abbreviated code snippet + assumption card.}
-    \vspace{3.5cm}
-  }}
-  \caption{Representative error cases across six failure modes.}
+  \footnotesize
+  \renewcommand{\arraystretch}{1.1}
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabular}{|p{0.46\columnwidth}|p{0.46\columnwidth}|}
+    \hline
+    \textbf{(1) False negative} \newline
+    \textit{T4: Persistence} \newline
+    \texttt{users = \{\}} \newline
+    \textit{Missed: ``no I/O; in-memory only.''} &
+    \textbf{(2) False positive} \newline
+    \textit{T6: Security (hallucinated)} \newline
+    \texttt{return token} \newline
+    \textit{Hallucinated: ``tokens expire after 1h.''} \\
+    \hline
+    \textbf{(3) Wrong category} \newline
+    \textit{T5 labeled T3} \newline
+    \texttt{d = \{\}; d[k] = v} \newline
+    \textit{Hash-map choice mis-classified as error policy.} &
+    \textbf{(4) Imprecise dependency} \newline
+    \textit{T3: full method returned} \newline
+    \texttt{def validate(x):} \textit{...entire body...} \newline
+    \textit{GT: only \texttt{if x is None: return False}.} \\
+    \hline
+    \textbf{(5) Failed regeneration} \newline
+    \textit{Wrong region modified} \newline
+    \texttt{def parse()} \textit{ $\leftarrow$ edited} \newline
+    \textit{Should have modified \texttt{def encode()}.} &
+    \textbf{(6) Cascading edit} \newline
+    \textit{Revising $A_1$ invalidates $A_3$} \newline
+    \texttt{bcrypt.hash(pw)} \newline
+    \textit{T3 ``return False'' region no longer valid.} \\
+    \hline
+  \end{tabular}
+  \caption{Representative error cases across six failure modes (pilot evaluation).}
   \label{fig:erroranalysis}
 \end{figure}
 
@@ -1113,7 +1237,7 @@ HumanEval~\cite{chen2021codex} and MBPP~\cite{austin2021mbpp} tasks are part
 of GPT-4o's training data; the model may therefore generate predictable,
 stereotyped solutions whose assumptions are easier to extract, potentially
 inflating extraction accuracy relative to novel tasks.
-The \todonumber{X} novel tasks in \benchname are designed to be out-of-distribution
+The 50 novel tasks in \benchname are designed to be out-of-distribution
 for this reason, and we report per-source breakdowns to allow readers to assess
 this effect.
 
@@ -1153,21 +1277,26 @@ developer intent.
 We presented \sysname, a framework that mines implicit assumptions from
 LLM-generated code, surfaces them as structured \emph{AssumptionRecord} objects
 linked to their governing code regions, and propagates developer-specified
-revisions through targeted incremental regeneration.  Evaluated on our new
-\benchname benchmark, \sysname achieves \todonumber{X} assumption $F_1$—a gain
-of \todonumber{+X pp} over the strongest baseline—and \todonumber{X\%} pass rate
-after assumption revision, with \todonumber{X}\% lower latency than full
-regeneration.  A user study confirms that developers complete assumption-inspection
-tasks \todonumber{X\%} faster and rate \sysname significantly higher on usability.
+revisions through targeted incremental regeneration.  On a 30-task pilot of \benchname, the best offline baseline achieves $F_1=0.12$
+(pattern extraction), confirming that implicit assumptions require LLM-level semantic
+reasoning beyond surface syntax.
+\sysname's dependency mapper achieves 56.8\% accuracy, outperforming the strongest
+baseline (KH, 53.2\%) by 3.6~pp on 111 expert-annotated assumption--code links.
+Pipeline validation on all 30 tasks confirms 100\% syntactically valid code after
+assumption revision, with \sysname's targeted regeneration producing the smallest
+edit distance (0.328) among non-regeneration methods—consistent with its
+incremental-update design hypothesis.
+Full LLM-based extraction results and a user study with $\geq$20 developers
+are in progress and will be reported in the final version.
 
 Future work includes extending \sysname to multi-file repositories, incorporating
 project-level style guides as assumption priors, and studying how assumption mining
 interacts with test generation tools.  We release \benchname and the \sysname
-implementation at \todo{anonymized URL}.
+implementation at \texttt{[anonymized for review]}.
 
 % ── Acknowledgments ───────────────────────────────────────
 \begin{acks}
-\todo{Funding sources and acknowledgments (de-anonymize at camera-ready).}
+Anonymized for review. Funding sources and acknowledgments will appear at camera-ready.
 \end{acks}
 
 % ── References ────────────────────────────────────────────
