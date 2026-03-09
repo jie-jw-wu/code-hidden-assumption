@@ -948,15 +948,40 @@ T6 (Security) achieves the highest accuracy (0.80) for \sysname, likely because
 security patterns cluster around a small number of import and function-definition sites.
 T1 (Input Validation) is hardest for \sysname (0.53) and T5 (Performance) is hardest
 for KH (0.38), as both categories span diverse AST node types.
+\cref{tab:ablation} isolates each node-type contribution:
+removing \texttt{assignment} from T5 drops accuracy by 2.7pp (56.8\%$\to$54.1\%),
+while removing either \texttt{call} or \texttt{with\_statement} from T3 each costs 0.9pp.
+Adding \texttt{import\_from\_statement} to T5 shows no accuracy gain, suggesting
+performance-assumption keywords overlap more with assignment sites than import sites.
 The LLM-guided pass is expected to improve further by reasoning over
 semantic descriptions rather than surface tokens.
+
+\begin{table}[t]
+\caption{RQ2 ablation: dependency mapper accuracy when removing one node type
+         at a time from the full configuration (pilot, $n=30$, 111 assumptions).}
+\label{tab:ablation}
+\small
+\begin{tabular}{@{}lrr@{}}
+\toprule
+\textbf{Configuration} & \textbf{Acc.} & \textbf{$\Delta$ Acc.} \\
+\midrule
+Full (all expansions)                       & 0.568 & — \\
+\quad$-$T3 \texttt{call}                   & 0.559 & $-$0.9pp \\
+\quad$-$T3 \texttt{with\_statement}        & 0.559 & $-$0.9pp \\
+\quad$-$T5 \texttt{import\_from\_statement}& 0.568 & 0.0pp \\
+\quad$-$T5 \texttt{assignment}             & 0.541 & $-$2.7pp \\
+Original (no expansions)                    & 0.541 & $-$2.7pp \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \begin{rqbox}{RQ2 Summary (pilot, $n=30$)}
 The \sysname heuristic dependency mapper achieves \textbf{56.8\%} accuracy
 (mean IoU\,=\,0.554), outperforming the keyword-heuristic baseline by 3.6pp.
-The improvement stems from expanded AST node coverage: T3 assumptions are
-found at \texttt{with\_statement} and \texttt{call} sites; T5 assumptions are
-linked to performance-library imports.
+An ablation study confirms that the two most impactful node-type expansions are:
+(1) adding \texttt{call} and \texttt{with\_statement} to T3 (+0.9pp each),
+and (2) adding \texttt{assignment} to T5 (+2.7pp together with the original);
+without these, accuracy falls to 54.1\%.
 \end{rqbox}
 
 \subsection{RQ3: Code Adaptability}
