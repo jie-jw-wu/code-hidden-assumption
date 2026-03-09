@@ -606,12 +606,16 @@ Edge weights reflect confidence.
 
 Edge construction proceeds in two passes:
 \begin{enumerate}[noitemsep]
-  \item \textbf{LLM pass.}  The extraction prompt (\cref{lst:prompt}) requests
-        natural-language descriptions of relevant code regions.  We parse these
-        with a token-overlap heuristic: we tokenize both the LLM's region
-        description and each code identifier, then retain AST nodes whose
-        identifier tokens share a Jaccard similarity $\geq 0.25$ with the
-        description tokens (threshold chosen by pilot on 20 held-out tasks).
+  \item \textbf{Keyword-overlap pass.}  We extract content words from the
+        assumption's \emph{description} and \emph{alternatives} fields and
+        tokenize the code identifiers.  AST nodes of the category-appropriate
+        types (e.g., T3: \texttt{except\_clause}, \texttt{with\_statement},
+        \texttt{call}; T6: \texttt{import\_statement}, \texttt{call}) are
+        scored by Jaccard similarity between
+        assumption tokens and identifier tokens; nodes scoring $\geq 0.25$
+        are retained as candidates (threshold chosen by pilot on 20 held-out tasks).
+        Optionally, an LLM call can replace keyword scoring with semantic
+        region descriptions (\texttt{use\_llm=True}; results pending API access).
   \item \textbf{AST refinement pass.}  We parse $c$ with the \code{tree-sitter}
         library and perform a bottom-up traversal from each candidate leaf node,
         stopping at the deepest ancestor that encloses \emph{all} candidate
@@ -940,10 +944,10 @@ On our pilot benchmark ($n=30$ tasks, 111 expert-annotated assumptions), the
 node-type coverage for T3/T5, §\ref{sec:dependency}) achieves \textbf{56.8\%}
 accuracy (mean IoU\,=\,0.554), \emph{outperforming} the keyword-heuristic
 baseline by 3.6pp (KH: 53.2\%) and Full-File by a large margin (FF: 7.2\%).
-The expanded node-type coverage—adding \texttt{with\_statement} and \texttt{call}
-to T3, and \texttt{import\_from\_statement} to T5—allows the mapper to find
-error-handling assumptions anchored to \texttt{with open()} calls and
-performance assumptions anchored to library import lines.
+The expanded node-type coverage—adding \texttt{with\_statement}, \texttt{call},
+and \texttt{assignment} to T3/T5—allows the mapper to find error-handling
+assumptions anchored to \texttt{with open()} calls and performance assumptions
+anchored to variable-level algorithmic choices (e.g., \texttt{d = \{\}} for hash maps).
 T6 (Security) achieves the highest accuracy (0.80) for \sysname, likely because
 security patterns cluster around a small number of import and function-definition sites.
 T1 (Input Validation) is hardest for \sysname (0.53) and T5 (Performance) is hardest
